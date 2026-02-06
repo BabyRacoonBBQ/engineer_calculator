@@ -1,0 +1,14 @@
+# IDE-specific (this project is IDE-agnostic)
+.vscode/
+.idea/
+.cursor/
+.cursorrules
+.claude/
+.windsurf/
+*.swp
+*.swo
+
+# OS files
+Thumbs.db
+desktop.ini
+.DS_Store
