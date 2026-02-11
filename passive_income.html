@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Passive Income Calculator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,6 +11,7 @@
     href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap"
     rel="stylesheet">
   <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
   <style>
     .input-group {
       margin-bottom: 1.25rem;
@@ -182,7 +183,8 @@
   </style>
 </head>
 
-<body>
+<body class="tool-page">
+  <a href="index.html" class="nav-float" title="Home">☰</a>
   <div class="app">
     <aside class="sidebar">
       <h2>Explorer</h2>
@@ -237,7 +239,7 @@
             </div>
           </div>
 
-          <button type="button" class="btn" id="calcBtn" style="margin-top: 1.5rem;">Calculate</button>
+          <div class="btn-wrap" style="margin-top: 1.5rem;"><button type="button" class="btn" id="calcBtn">Calculate</button></div>
 
           <div class="result-card" id="resultCard">
             <div class="result-row">

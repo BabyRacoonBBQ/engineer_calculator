@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Engineer Calculator</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="shared.css">
+  <script src="shared.js"></script>
   <style>
     .hub-section { margin-bottom: 2rem; }
     .hub-section:last-child { margin-bottom: 0; }
@@ -52,20 +53,53 @@
       margin: 0;
       line-height: 1.45;
     }
+    .lang-switcher {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      margin-bottom: 1.5rem;
+    }
+    .lang-switcher span {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-right: 0.5rem;
+    }
+    .lang-btn {
+      padding: 0.4rem 0.75rem;
+      font-size: 0.85rem;
+      font-weight: 500;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      cursor: pointer;
+      font-family: inherit;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+    }
+    .lang-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(56, 189, 248, 0.08);
+    }
+    .lang-btn.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
   </style>
 </head>
 <body>
   <div class="app">
     <aside class="sidebar">
-      <h2>Explorer</h2>
+      <h2 data-i18n="explorer">Explorer</h2>
       <div class="sidebar-section">
-        <div class="sidebar-label">Navigate</div>
+        <div class="sidebar-label" data-i18n="navNavigate">Navigate</div>
         <div class="tool-links">
-          <a class="tool-link active" href="index.html">Home</a>
+          <a class="tool-link active" href="index.html" data-i18n="navHome">Home</a>
         </div>
       </div>
       <div class="sidebar-section">
-        <div class="sidebar-label">Civil Engineering</div>
+        <div class="sidebar-label" data-i18n="civilEng">Civil Engineering</div>
         <div class="tool-links">
           <a class="tool-link" href="elastic.html">Elastic constants</a>
           <a class="tool-link" href="unit.html">Unit conversion</a>
@@ -73,7 +107,7 @@
         </div>
       </div>
       <div class="sidebar-section">
-        <div class="sidebar-label">Personal Finance</div>
+        <div class="sidebar-label" data-i18n="personalFin">Personal Finance</div>
         <div class="tool-links">
           <a class="tool-link" href="compound_interest.html">Compound Interest</a>
           <a class="tool-link" href="real_estate.html">Real Estate</a>
@@ -85,54 +119,153 @@
     </aside>
     <main class="main">
       <div class="container">
-        <h1>Engineer Calculator</h1>
-        <p class="subtitle">Tools for civil engineering and personal finance. Pick a tool below or use the sidebar.</p>
+        <div class="lang-switcher">
+          <span data-i18n="langLabel">Language</span>
+          <button type="button" class="lang-btn active" data-lang="en">English</button>
+          <button type="button" class="lang-btn" data-lang="zh">中文</button>
+        </div>
+        <h1 data-i18n="title">Engineer Calculator</h1>
+        <p class="subtitle" data-i18n="subtitle">Tools for civil engineering and personal finance. Pick a tool below or use the sidebar.</p>
 
         <div class="hub-section">
-          <h2>Civil Engineering</h2>
+          <h2 data-i18n="civilEng">Civil Engineering</h2>
           <div class="hub-grid">
             <a class="hub-card" href="elastic.html">
-              <h3>Elastic constants</h3>
-              <p>Convert among G (shear), E (Young’s), κ (bulk), λ (Lamé), ν (Poisson).</p>
+              <h3 data-i18n="elastic">Elastic constants</h3>
+              <p data-i18n="elasticDesc">Convert among G (shear), E (Young’s), κ (bulk), λ (Lamé), ν (Poisson).</p>
             </a>
             <a class="hub-card" href="unit.html">
-              <h3>Unit conversion</h3>
-              <p>Convert units for length, force, stress, and more.</p>
+              <h3 data-i18n="unit">Unit conversion</h3>
+              <p data-i18n="unitDesc">Convert units for length, force, stress, and more.</p>
             </a>
             <a class="hub-card" href="pdf-editor.html">
-              <h3>PDF editor</h3>
-              <p>Edit and annotate PDFs in the browser.</p>
+              <h3 data-i18n="pdf">PDF editor</h3>
+              <p data-i18n="pdfDesc">Edit and annotate PDFs in the browser.</p>
             </a>
           </div>
         </div>
 
         <div class="hub-section">
-          <h2>Personal Finance</h2>
+          <h2 data-i18n="personalFin">Personal Finance</h2>
           <div class="hub-grid">
             <a class="hub-card" href="compound_interest.html">
-              <h3>Compound Interest</h3>
-              <p>Project growth with compound interest over time.</p>
+              <h3 data-i18n="compound">Compound Interest</h3>
+              <p data-i18n="compoundDesc">Project growth with compound interest over time.</p>
             </a>
             <a class="hub-card" href="real_estate.html">
-              <h3>Real Estate</h3>
-              <p>Rent vs. buy and related calculations.</p>
+              <h3 data-i18n="realEstate">Real Estate</h3>
+              <p data-i18n="realEstateDesc">Rent vs. buy and related calculations.</p>
             </a>
             <a class="hub-card" href="passive_income.html">
-              <h3>Passive Income</h3>
-              <p>Estimate passive income streams.</p>
+              <h3 data-i18n="passiveIncome">Passive Income</h3>
+              <p data-i18n="passiveIncomeDesc">Estimate passive income streams.</p>
             </a>
             <a class="hub-card" href="phd_decision.html">
-              <h3>PhD Decision</h3>
-              <p>Compare asset paths: stay working vs. do a PhD.</p>
+              <h3 data-i18n="phd">PhD Decision</h3>
+              <p data-i18n="phdDesc">Compare asset paths: stay working vs. do a PhD.</p>
             </a>
             <a class="hub-card" href="save_vs_graduate.html">
-              <h3>Save vs Graduate</h3>
-              <p>See if saving during PhD or graduating earlier matters more.</p>
+              <h3 data-i18n="saveVsGrad">Save vs Graduate</h3>
+              <p data-i18n="saveVsGradDesc">See if saving during PhD or graduating earlier matters more.</p>
             </a>
           </div>
         </div>
       </div>
     </main>
   </div>
+  <script>
+    (function() {
+      var STORAGE_KEY = 'engcalc_lang';
+      var texts = {
+        en: {
+          langLabel: 'Language',
+          title: 'Engineer Calculator',
+          subtitle: 'Tools for civil engineering and personal finance. Pick a tool below or use the sidebar.',
+          civilEng: 'Civil Engineering',
+          elastic: 'Elastic constants',
+          elasticDesc: 'Convert among G (shear), E (Young\'s), κ (bulk), λ (Lamé), ν (Poisson).',
+          unit: 'Unit conversion',
+          unitDesc: 'Convert units for length, force, stress, and more.',
+          pdf: 'PDF editor',
+          pdfDesc: 'Edit and annotate PDFs in the browser.',
+          personalFin: 'Personal Finance',
+          compound: 'Compound Interest',
+          compoundDesc: 'Project growth with compound interest over time.',
+          realEstate: 'Real Estate',
+          realEstateDesc: 'Rent vs. buy and related calculations.',
+          passiveIncome: 'Passive Income',
+          passiveIncomeDesc: 'Estimate passive income streams.',
+          phd: 'PhD Decision',
+          phdDesc: 'Compare asset paths: stay working vs. do a PhD.',
+          saveVsGrad: 'Save vs Graduate',
+          saveVsGradDesc: 'See if saving during PhD or graduating earlier matters more.',
+          navNavigate: 'Navigate',
+          navHome: 'Home',
+          explorer: 'Explorer'
+        },
+        zh: {
+          langLabel: '语言',
+          title: '工程师计算器',
+          subtitle: '土木工程与个人理财工具。点击下方卡片或使用侧边栏选择工具。',
+          civilEng: '土木工程',
+          elastic: '弹性常数',
+          elasticDesc: 'G（剪切模量）、E（杨氏模量）、κ（体积模量）、λ（拉梅常数）、ν（泊松比）之间的换算。',
+          unit: '单位换算',
+          unitDesc: '长度、力、应力等单位的换算。',
+          pdf: 'PDF 编辑器',
+          pdfDesc: '在浏览器中编辑与批注 PDF。',
+          personalFin: '个人理财',
+          compound: '复利计算',
+          compoundDesc: '计算复利随时间累积的增长。',
+          realEstate: '房产',
+          realEstateDesc: '租房 vs 买房及相关计算。',
+          passiveIncome: '被动收入',
+          passiveIncomeDesc: '估算被动收入来源。',
+          phd: '读博决策',
+          phdDesc: '比较持续工作与读博的资产路径。',
+          saveVsGrad: '储蓄 vs 提早毕业',
+          saveVsGradDesc: '比较读博期间储蓄与提早毕业哪个更重要。',
+          navNavigate: '导航',
+          navHome: '首页',
+          explorer: '探索'
+        }
+      };
+
+      function getLang() {
+        try {
+          var l = localStorage.getItem(STORAGE_KEY);
+          return (l === 'zh' || l === 'en') ? l : 'en';
+        } catch (_) { return 'en'; }
+      }
+
+      function setLang(lang) {
+        try { localStorage.setItem(STORAGE_KEY, lang); } catch (_) {}
+        document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+        applyLang(lang);
+      }
+
+      function applyLang(lang) {
+        var t = texts[lang] || texts.en;
+        document.querySelectorAll('[data-i18n]').forEach(function(el) {
+          var k = el.getAttribute('data-i18n');
+          if (t[k]) el.textContent = t[k];
+        });
+        document.querySelectorAll('.lang-btn').forEach(function(btn) {
+          btn.classList.toggle('active', btn.getAttribute('data-lang') === lang);
+        });
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        var lang = getLang();
+        document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+        applyLang(lang);
+        document.querySelectorAll('.lang-btn').forEach(function(btn) {
+          btn.addEventListener('click', function() {
+            setLang(btn.getAttribute('data-lang'));
+          });
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
