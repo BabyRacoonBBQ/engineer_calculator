@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PDF Editor — Preview, Extract, Merge</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    /* Specific styles */
+    .tabs {
+      display: flex;
+      gap: 0.35rem;
+      margin-bottom: 1.25rem;
+      flex-wrap: wrap;
+    }
+
+    .tabs button {
+      padding: 0.6rem 1.15rem;
+      font: inherit;
+      font-size: 0.9rem;
+      font-weight: 500;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+    }
+
+    .tabs button:hover {
+      color: var(--text);
+      border-color: var(--border-strong);
+    }
+
+    .tabs button.active {
+      background: var(--accent);
+      color: #0c1222;
+      border-color: var(--accent);
+    }
+
+    .panel {
+      display: none;
+    }
+
+    .panel.active {
+      display: block;
+    }
+
+    #previewCanvas {
+      max-width: 100%;
+      height: auto;
+      background: #fff;
+      border-radius: 10px;
+      margin-top: 0.75rem;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .preview-nav {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .preview-nav span {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .page-range {
+      margin: 0.75rem 0;
+    }
+
+    .page-range input[type="number"] {
+      width: 5rem;
+      padding: 0.5rem 0.65rem;
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 0.9rem;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      margin: 0 0.25rem;
+    }
+
+    .page-range input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .merge-list {
+      list-style: none;
+      padding: 0;
+      margin: 0.5rem 0;
+    }
+
+    .merge-list li {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.6rem 0.75rem;
+      border-radius: 8px;
+      background: var(--bg-subtle);
+      border: 1px solid transparent;
+      margin-bottom: 0.35rem;
+      cursor: grab;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .merge-list li:active {
+      cursor: grabbing;
+    }
+
+    .merge-list li.drag-over {
+      position: relative;
+    }
+
+    .merge-list li.drag-over:not(.merge-list-drop-line)::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: -2px;
+      height: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      z-index: 1;
+    }
+
+    .merge-list li.merge-list-drop-line {
+      min-height: 10px;
+      margin: 2px 0;
+      padding: 0;
+      border: none;
+      background: transparent;
+      cursor: default;
+      list-style: none;
+      border-radius: 2px;
+    }
+
+    .merge-list li.merge-list-drop-line.drag-over::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      margin-top: -1.5px;
+      height: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      z-index: 1;
+    }
+
+    .merge-list li.dragging {
+      opacity: 0.5;
+    }
+
+    .merge-list.is-dragging li {
+      transition: none;
+    }
+
+    .merge-list li .drag-handle {
+      color: var(--muted);
+      cursor: grab;
+      padding: 0 0.25rem;
+      user-select: none;
+    }
+
+    .merge-list li .order {
+      color: var(--muted);
+      min-width: 2rem;
+      font-weight: 500;
+    }
+
+    .merge-list li .name {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .merge-list li button {
+      padding: 0.3rem 0.6rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--muted);
+      cursor: pointer;
+      transition: border-color 0.15s ease, color 0.15s ease;
+    }
+
+    .merge-list li button:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+    }
+
+    .merge-list li button.remove-btn:hover {
+      color: var(--error);
+      border-color: var(--error);
+    }
+
+    .merge-list li button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .merge-list li button:disabled:hover {
+      color: var(--muted);
+      border-color: var(--border);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <h2>Explorer</h2>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Civil Engineering</div>
+        <div class="tool-links">
+          <a class="tool-link" href="index.html">Elastic constants</a>
+          <a class="tool-link" href="unit.html">Unit conversion</a>
+          <a class="tool-link active" href="pdf-editor.html">PDF editor</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Personal Finance</div>
+        <div class="tool-links">
+          <a class="tool-link" href="compound_interest.html">Compound Interest</a>
+          <a class="tool-link" href="real_estate.html">Real Estate</a>
+          <a class="tool-link" href="passive_income.html">Passive Income</a>
+        </div>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="container">
+        <h1>PDF Editor</h1>
+        <p class="subtitle">Preview PDFs, extract pages into a new file, or combine multiple PDFs. All processing runs
+          in
+          your browser.</p>
+
+        <div class="tabs">
+          <button type="button" class="tab active" data-panel="preview">Preview</button>
+          <button type="button" class="tab" data-panel="extract">Extract pages</button>
+          <button type="button" class="tab" data-panel="merge">Merge PDFs</button>
+        </div>
+
+        <!-- Preview -->
+        <div id="panel-preview" class="panel active card">
+          <label>PDF file</label>
+          <input type="file" id="previewFile" accept="application/pdf">
+          <div class="preview-nav" id="previewNav" style="display:none;">
+            <button type="button" class="btn btn-secondary" id="prevPage">Previous</button>
+            <button type="button" class="btn btn-secondary" id="nextPage">Next</button>
+            <span id="pageInfo">Page 1 of 1</span>
+          </div>
+          <canvas id="previewCanvas"></canvas>
+          <p id="previewError" class="error-msg" style="display:none;"></p>
+        </div>
+
+        <!-- Extract pages -->
+        <div id="panel-extract" class="panel card">
+          <label>Source PDF</label>
+          <input type="file" id="extractFile" accept="application/pdf">
+          <div id="extractPreviewWrap" style="display:none; margin-top:1rem;">
+            <label>Preview (browse to decide which pages to extract)</label>
+            <div class="preview-nav" style="margin-top:0.35rem;">
+              <button type="button" class="btn btn-secondary" id="extractPrevPage">Previous</button>
+              <button type="button" class="btn btn-secondary" id="extractNextPage">Next</button>
+              <span id="extractPageInfo">Page 1 of 1</span>
+            </div>
+            <canvas id="extractPreviewCanvas"
+              style="max-width:100%;height:auto;background:#fff;border-radius:4px;margin-top:0.5rem;"></canvas>
+          </div>
+          <div class="page-range" id="extractRange" style="display:none;">
+            <label>Pages to extract</label>
+            <span>Total <span id="extractTotal">0</span> pages. Range or list (1-based):</span>
+            <input type="text" id="extractPageSpec" placeholder="e.g. 1-5 or 4,7,2,3,1 or [4,7,2,3,1]"
+              style="width:100%;padding:0.65rem 0.85rem;margin-top:0.35rem;font:inherit;background:var(--bg-subtle);border:1px solid var(--border);border-radius:10px;color:var(--text);">
+            <button type="button" class="btn" id="extractBtn">Download &amp; preview extracted PDF</button>
+          </div>
+          <p id="extractError" class="error-msg" style="display:none;"></p>
+        </div>
+
+        <!-- Merge -->
+        <div id="panel-merge" class="panel card">
+          <label>Add PDF files (order = merge order)</label>
+          <input type="file" id="mergeFile" accept="application/pdf" multiple>
+          <ul class="merge-list" id="mergeList"></ul>
+          <button type="button" class="btn" id="mergeBtn" disabled>Download merged PDF</button>
+          <p id="mergeError" class="error-msg" style="display:none;"></p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    const { PDFDocument } = PDFLib;
+
+    // Tabs
+    document.querySelectorAll('.tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('panel-' + btn.dataset.panel).classList.add('active');
+      });
+    });
+
+    // PDF.js worker
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    // —— Preview ——
+    let pdfDoc = null;
+    let currentPage = 1;
+
+    const previewFile = document.getElementById('previewFile');
+    const previewCanvas = document.getElementById('previewCanvas');
+    const previewNav = document.getElementById('previewNav');
+    const pageInfo = document.getElementById('pageInfo');
+    const previewError = document.getElementById('previewError');
+    const prevPageBtn = document.getElementById('prevPage');
+    const nextPageBtn = document.getElementById('nextPage');
+
+    function showPreviewError(msg) {
+      previewError.textContent = msg || '';
+      previewError.style.display = msg ? 'block' : 'none';
+    }
+
+    async function renderPage() {
+      if (!pdfDoc) return;
+      const page = await pdfDoc.getPage(currentPage);
+      const scale = 1.5;
+      const viewport = page.getViewport({ scale });
+      const ctx = previewCanvas.getContext('2d');
+      previewCanvas.height = viewport.height;
+      previewCanvas.width = viewport.width;
+      await page.render({ canvasContext: ctx, viewport }).promise;
+      pageInfo.textContent = `Page ${currentPage} of ${pdfDoc.numPages}`;
+      prevPageBtn.disabled = currentPage <= 1;
+      nextPageBtn.disabled = currentPage >= pdfDoc.numPages;
+    }
+
+    previewFile.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      showPreviewError('');
+      try {
+        const buf = await file.arrayBuffer();
+        pdfDoc = await pdfjsLib.getDocument(buf).promise;
+        currentPage = 1;
+        previewNav.style.display = 'flex';
+        await renderPage();
+      } catch (err) {
+        showPreviewError(err.message || 'Failed to load PDF');
+        previewNav.style.display = 'none';
+      }
+    });
+
+    prevPageBtn.addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderPage(); } });
+    nextPageBtn.addEventListener('click', () => { if (pdfDoc && currentPage < pdfDoc.numPages) { currentPage++; renderPage(); } });
+
+    function switchToPreviewTab() {
+      document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelector('.tab[data-panel="preview"]').classList.add('active');
+      document.getElementById('panel-preview').classList.add('active');
+    }
+
+    async function previewFromArrayBuffer(arrayBuffer) {
+      showPreviewError('');
+      try {
+        if (pdfDoc) pdfDoc.destroy();
+      } catch (_) { }
+      pdfDoc = await pdfjsLib.getDocument(arrayBuffer).promise;
+      currentPage = 1;
+      previewNav.style.display = 'flex';
+      await renderPage();
+    }
+
+    // —— Extract pages ——
+    let extractPdfBytes = null;
+    let extractNumPages = 0;
+
+    const extractFileInput = document.getElementById('extractFile');
+    const extractRange = document.getElementById('extractRange');
+    const extractPageSpec = document.getElementById('extractPageSpec');
+    const extractTotal = document.getElementById('extractTotal');
+    const extractBtn = document.getElementById('extractBtn');
+    const extractError = document.getElementById('extractError');
+
+    function showExtractError(msg) {
+      extractError.textContent = msg || '';
+      extractError.style.display = msg ? 'block' : 'none';
+    }
+
+    /** Parse "1-5", "4,7,2,3,1", "[4,7,2,3,1]", "1,3,5-7" into 0-based indices. Max 1-based page = maxPage. */
+    function parsePageSpec(spec, maxPage) {
+      const s = String(spec).trim().replace(/^\[|\]$/g, '').trim();
+      if (!s) return null;
+      const out = [];
+      const parts = s.split(',');
+      for (const part of parts) {
+        const t = part.trim();
+        if (t.includes('-')) {
+          const [a, b] = t.split('-').map(x => parseInt(x.trim(), 10));
+          if (isNaN(a) || isNaN(b) || a < 1 || b > maxPage || a > b) return null;
+          for (let i = a; i <= b; i++) out.push(i - 1);
+        } else {
+          const n = parseInt(t, 10);
+          if (isNaN(n) || n < 1 || n > maxPage) return null;
+          out.push(n - 1);
+        }
+      }
+      return out.length ? out : null;
+    }
+
+    let extractPdfDoc = null;
+    let extractCurrentPage = 1;
+    const extractPreviewWrap = document.getElementById('extractPreviewWrap');
+    const extractPreviewCanvas = document.getElementById('extractPreviewCanvas');
+    const extractPageInfo = document.getElementById('extractPageInfo');
+
+    async function renderExtractPreviewPage() {
+      if (!extractPdfDoc) return;
+      const page = await extractPdfDoc.getPage(extractCurrentPage);
+      const scale = 1.5;
+      const viewport = page.getViewport({ scale });
+      const ctx = extractPreviewCanvas.getContext('2d');
+      extractPreviewCanvas.height = viewport.height;
+      extractPreviewCanvas.width = viewport.width;
+      await page.render({ canvasContext: ctx, viewport }).promise;
+      extractPageInfo.textContent = `Page ${extractCurrentPage} of ${extractPdfDoc.numPages}`;
+      document.getElementById('extractPrevPage').disabled = extractCurrentPage <= 1;
+      document.getElementById('extractNextPage').disabled = extractCurrentPage >= extractPdfDoc.numPages;
+    }
+
+    document.getElementById('extractPrevPage').addEventListener('click', () => {
+      if (extractPdfDoc && extractCurrentPage > 1) { extractCurrentPage--; renderExtractPreviewPage(); }
+    });
+    document.getElementById('extractNextPage').addEventListener('click', () => {
+      if (extractPdfDoc && extractCurrentPage < extractPdfDoc.numPages) { extractCurrentPage++; renderExtractPreviewPage(); }
+    });
+
+    extractFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      showExtractError('');
+      try {
+        extractPdfBytes = new Uint8Array(await file.arrayBuffer());
+        const doc = await PDFDocument.load(extractPdfBytes);
+        extractNumPages = doc.getPageCount();
+        extractTotal.textContent = extractNumPages;
+        extractPageSpec.value = `1-${extractNumPages}`;
+        extractPageSpec.placeholder = `e.g. 1-${extractNumPages} or 4,7,2,3,1`;
+        extractRange.style.display = 'block';
+        const ab = extractPdfBytes.buffer.slice(extractPdfBytes.byteOffset, extractPdfBytes.byteOffset + extractPdfBytes.byteLength);
+        if (extractPdfDoc) try { extractPdfDoc.destroy(); } catch (_) { }
+        extractPdfDoc = await pdfjsLib.getDocument(ab).promise;
+        extractCurrentPage = 1;
+        extractPreviewWrap.style.display = 'block';
+        await renderExtractPreviewPage();
+      } catch (err) {
+        showExtractError(err.message || 'Failed to load PDF');
+        extractRange.style.display = 'none';
+        extractPreviewWrap.style.display = 'none';
+      }
+    });
+
+    extractBtn.addEventListener('click', async () => {
+      if (!extractPdfBytes || extractNumPages === 0) return;
+      const indices = parsePageSpec(extractPageSpec.value, extractNumPages);
+      if (!indices || indices.length === 0) {
+        showExtractError('Invalid page spec. Use e.g. 1-5 or 4,7,2,3,1 (1-based, max ' + extractNumPages + ')');
+        return;
+      }
+      showExtractError('');
+      try {
+        const srcDoc = await PDFDocument.load(extractPdfBytes);
+        const outDoc = await PDFDocument.create();
+        const copied = await outDoc.copyPages(srcDoc, indices);
+        copied.forEach(p => outDoc.addPage(p));
+        const outBytes = await outDoc.save();
+        const blob = new Blob([outBytes], { type: 'application/pdf' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'extracted.pdf';
+        a.click();
+        const ab = outBytes.buffer.slice(outBytes.byteOffset, outBytes.byteOffset + outBytes.byteLength);
+        URL.revokeObjectURL(a.href);
+        switchToPreviewTab();
+        await previewFromArrayBuffer(ab);
+      } catch (err) {
+        showExtractError(err.message || 'Extract failed');
+      }
+    });
+
+    // —— Merge ——
+    const mergeFiles = [];
+    const mergeFileInput = document.getElementById('mergeFile');
+    const mergeList = document.getElementById('mergeList');
+    const mergeBtn = document.getElementById('mergeBtn');
+    const mergeError = document.getElementById('mergeError');
+
+    function showMergeError(msg) {
+      mergeError.textContent = msg || '';
+      mergeError.style.display = msg ? 'block' : 'none';
+    }
+
+    let draggingMergeIndex = -1;
+
+    function addDropLine(insertIndex) {
+      const li = document.createElement('li');
+      li.className = 'merge-list-drop-line';
+      li.dataset.insertIndex = String(insertIndex);
+      li.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        if (insertIndex !== draggingMergeIndex + 1) li.classList.add('drag-over');
+      });
+      li.addEventListener('dragleave', (e) => {
+        if (!li.contains(e.relatedTarget)) li.classList.remove('drag-over');
+      });
+      li.addEventListener('drop', (e) => {
+        e.preventDefault();
+        li.classList.remove('drag-over');
+        const from = parseInt(e.dataTransfer.getData('application/x-merge-index'), 10);
+        const to = insertIndex;
+        if (isNaN(from)) return;
+        if (to === from + 1) return;
+        const [item] = mergeFiles.splice(from, 1);
+        const insertAt = from < to ? to - 1 : to;
+        mergeFiles.splice(insertAt, 0, item);
+        renderMergeList();
+      });
+      return li;
+    }
+
+    function renderMergeList() {
+      mergeList.innerHTML = '';
+      mergeList.appendChild(addDropLine(0));
+      mergeFiles.forEach((f, i) => {
+        const li = document.createElement('li');
+        li.draggable = true;
+        li.dataset.index = String(i);
+        li.innerHTML = `<span class="drag-handle" title="Drag to reorder">⋮⋮</span><span class="order">${i + 1}.</span><span class="name">${f.name}</span><button type="button" class="remove-btn" data-i="${i}">Remove</button>`;
+        const idx = i;
+        li.addEventListener('dragstart', (e) => {
+          if (e.target.closest('button')) { e.preventDefault(); return; }
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', String(idx));
+          e.dataTransfer.setData('application/x-merge-index', String(idx));
+          draggingMergeIndex = idx;
+          mergeList.classList.add('is-dragging');
+          li.classList.add('dragging');
+        });
+        li.addEventListener('dragend', () => {
+          li.classList.remove('dragging');
+          mergeList.classList.remove('is-dragging');
+          draggingMergeIndex = -1;
+          document.querySelectorAll('.merge-list li.drag-over, .merge-list-drop-line.drag-over').forEach(el => el.classList.remove('drag-over'));
+        });
+        li.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          if (!li.classList.contains('dragging') && idx !== draggingMergeIndex) li.classList.add('drag-over');
+        });
+        li.addEventListener('dragleave', (e) => {
+          if (!li.contains(e.relatedTarget)) li.classList.remove('drag-over');
+        });
+        li.addEventListener('drop', (e) => {
+          e.preventDefault();
+          li.classList.remove('drag-over');
+          const from = parseInt(e.dataTransfer.getData('application/x-merge-index'), 10);
+          const to = idx;
+          if (from === to || isNaN(from)) return;
+          const [item] = mergeFiles.splice(from, 1);
+          const insertAt = from < to ? to - 1 : to;
+          mergeFiles.splice(insertAt, 0, item);
+          renderMergeList();
+        });
+        li.querySelector('.remove-btn').addEventListener('click', (e) => {
+          e.stopPropagation();
+          mergeFiles.splice(idx, 1);
+          renderMergeList();
+          mergeBtn.disabled = mergeFiles.length === 0;
+        });
+        mergeList.appendChild(li);
+      });
+      mergeList.appendChild(addDropLine(mergeFiles.length));
+      mergeBtn.disabled = mergeFiles.length === 0;
+    }
+
+    mergeFileInput.addEventListener('change', (e) => {
+      const files = Array.from(e.target.files || []);
+      files.forEach(f => mergeFiles.push(f));
+      renderMergeList();
+      e.target.value = '';
+    });
+
+    mergeBtn.addEventListener('click', async () => {
+      if (mergeFiles.length === 0) return;
+      showMergeError('');
+      try {
+        const outDoc = await PDFDocument.create();
+        for (const file of mergeFiles) {
+          const bytes = new Uint8Array(await file.arrayBuffer());
+          const src = await PDFDocument.load(bytes);
+          const count = src.getPageCount();
+          const indices = Array.from({ length: count }, (_, i) => i);
+          const copied = await outDoc.copyPages(src, indices);
+          copied.forEach(p => outDoc.addPage(p));
+        }
+        const outBytes = await outDoc.save();
+        const blob = new Blob([outBytes], { type: 'application/pdf' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'merged.pdf';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      } catch (err) {
+        showMergeError(err.message || 'Merge failed');
+      }
+    });
+  </script>
+</body>
+
+</html>

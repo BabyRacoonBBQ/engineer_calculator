@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Passive Income Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    .input-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .rent-section {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .checkbox-row {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .checkbox-row input[type="checkbox"] {
+      width: auto;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .checkbox-row label {
+      margin: 0;
+      cursor: pointer;
+      font-size: 0.9rem;
+    }
+
+    .rent-input-wrap {
+      margin-left: 1.75rem;
+      margin-top: 0.75rem;
+      display: none;
+    }
+
+    .rent-input-wrap.visible {
+      display: block;
+    }
+
+    .result-card {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+      display: none;
+    }
+
+    .result-card.visible {
+      display: block;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .result-row:last-child {
+      border-bottom: none;
+    }
+
+    .result-row.total {
+      margin-top: 0.75rem;
+      padding-top: 1rem;
+      border-top: 2px solid var(--accent);
+      font-weight: 600;
+    }
+
+    .result-row .label {
+      font-size: 0.9rem;
+      color: var(--muted);
+    }
+
+    .result-row .value {
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .result-row.total .value {
+      font-size: 1.4rem;
+      color: var(--accent);
+    }
+
+    /* Goal form (monthly investment to reach target) */
+    .goal-card .input-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+    }
+    @media (max-width: 600px) {
+      .goal-card .input-row { grid-template-columns: 1fr; }
+    }
+    .goal-card .input-group { margin-bottom: 1.25rem; }
+    .goal-card .btn-wrap { margin-top: 1.5rem; }
+    .monthly-investment-result {
+      text-align: center;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+      background: var(--bg-subtle);
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      display: none;
+    }
+    .monthly-investment-result.visible { display: block; }
+    .monthly-investment-result .big-value {
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: var(--accent);
+    }
+    .monthly-investment-result .big-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      margin-top: 0.35rem;
+    }
+    .goal-summary {
+      font-size: 0.95rem;
+      color: var(--text-soft);
+      line-height: 1.65;
+      margin-top: 1.25rem;
+      padding: 0 0.5rem;
+    }
+    .goal-summary .highlight { color: var(--accent); font-weight: 600; }
+    .investment-table-wrap {
+      margin-top: 1.5rem;
+      overflow-x: auto;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+    }
+    .investment-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    .investment-table th {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      background: var(--bg-subtle);
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .investment-table td {
+      padding: 0.6rem 1rem;
+      border-top: 1px solid var(--border);
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+    }
+    .investment-table tr:hover td { background: rgba(56, 189, 248, 0.04); }
+    .view-all-wrap { text-align: center; margin-top: 0.75rem; }
+    .view-all-wrap a {
+      font-size: 0.9rem;
+      color: var(--accent);
+      cursor: pointer;
+      text-decoration: none;
+    }
+    .view-all-wrap a:hover { text-decoration: underline; }
+    .table-preview .investment-table tbody tr:nth-child(n+15) { display: none; }
+    .table-preview.view-all .investment-table tbody tr { display: table-row; }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <h2>Explorer</h2>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Civil Engineering</div>
+        <div class="tool-links">
+          <a class="tool-link" href="index.html">Elastic constants</a>
+          <a class="tool-link" href="unit.html">Unit conversion</a>
+          <a class="tool-link" href="pdf-editor.html">PDF editor</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Personal Finance</div>
+        <div class="tool-links">
+          <a class="tool-link" href="compound_interest.html">Compound Interest</a>
+          <a class="tool-link" href="real_estate.html">Real Estate</a>
+          <a class="tool-link active" href="passive_income.html">Passive Income</a>
+          <a class="tool-link" href="phd_decision.html">PhD Decision</a>
+        </div>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="container">
+        <h1>Passive Income Calculator</h1>
+        <p class="subtitle">See your estimated monthly passive income from savings (and optionally add rent income).</p>
+
+        <div class="card">
+          <div class="input-group">
+            <label for="savings">Savings / Invested amount ($)</label>
+            <input type="number" id="savings" min="0" step="1000" placeholder="e.g. 100000">
+          </div>
+          <div class="input-group">
+            <label for="yield">Annual yield rate (%)</label>
+            <input type="number" id="yield" min="0" max="100" step="0.1" value="5" placeholder="e.g. 5">
+          </div>
+
+          <div class="rent-section">
+            <div class="checkbox-row">
+              <input type="checkbox" id="includeRent" aria-label="Include rent income">
+              <label for="includeRent">Include rent income (optional)</label>
+            </div>
+            <div class="rent-input-wrap" id="rentWrap">
+              <label for="rent">Monthly rent income ($)</label>
+              <input type="number" id="rent" min="0" step="100" placeholder="e.g. 1500">
+            </div>
+          </div>
+
+          <button type="button" class="btn" id="calcBtn" style="margin-top: 1.5rem;">Calculate</button>
+
+          <div class="result-card" id="resultCard">
+            <div class="result-row">
+              <span class="label">From savings (per month)</span>
+              <span class="value" id="outSavings">—</span>
+            </div>
+            <div class="result-row rent-row" id="rentRow" style="display: none;">
+              <span class="label">Rent income (per month)</span>
+              <span class="value" id="outRent">—</span>
+            </div>
+            <div class="result-row total">
+              <span class="label">Total passive income (per month)</span>
+              <span class="value" id="outTotal">—</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card goal-card">
+          <h2 style="font-size: 1.15rem; margin: 0 0 0.5rem; color: var(--text);">Reach a passive income goal</h2>
+          <p class="subtitle" style="margin-bottom: 1.25rem;">How much to invest each month to get a target monthly passive income in a given number of years.</p>
+          <div class="input-row">
+            <div class="input-group">
+              <label for="currentSaved">Current amount saved ($)</label>
+              <input type="number" id="currentSaved" min="0" step="1000" placeholder="e.g. 20000" value="20000">
+            </div>
+            <div class="input-group">
+              <label for="goalRate">Annual rate of return (%)</label>
+              <input type="number" id="goalRate" min="0" max="100" step="0.1" value="10" placeholder="e.g. 10">
+            </div>
+          </div>
+          <div class="input-row">
+            <div class="input-group">
+              <label for="goalYears">Number of years</label>
+              <input type="number" id="goalYears" min="1" max="50" step="1" value="20" placeholder="e.g. 20">
+            </div>
+            <div class="input-group">
+              <label for="desiredMonthly">Desired passive income (monthly) ($)</label>
+              <input type="number" id="desiredMonthly" min="0" step="100" placeholder="e.g. 5000" value="5000">
+            </div>
+          </div>
+          <div class="btn-wrap">
+            <button type="button" class="btn" id="goalCalcBtn">Calculate</button>
+          </div>
+          <div class="monthly-investment-result" id="goalResultCard">
+            <div class="big-value" id="outMonthlyPmt">—</div>
+            <div class="big-label">Monthly investment</div>
+            <p class="goal-summary" id="goalSummary"></p>
+            <div class="investment-table-wrap table-preview" id="tableWrap">
+              <table class="investment-table">
+                <thead>
+                  <tr>
+                    <th>Month</th>
+                    <th>Balance</th>
+                    <th>Monthly contribution</th>
+                    <th>Earnings ($)</th>
+                    <th>End balance</th>
+                  </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+              </table>
+              <div class="view-all-wrap">
+                <a id="viewAllLink" href="javascript:void(0)">view all</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const savingsInput = document.getElementById('savings');
+    const yieldInput = document.getElementById('yield');
+    const includeRentCheck = document.getElementById('includeRent');
+    const rentWrap = document.getElementById('rentWrap');
+    const rentInput = document.getElementById('rent');
+    const calcBtn = document.getElementById('calcBtn');
+    const resultCard = document.getElementById('resultCard');
+    const outSavings = document.getElementById('outSavings');
+    const outRent = document.getElementById('outRent');
+    const outTotal = document.getElementById('outTotal');
+    const rentRow = document.getElementById('rentRow');
+
+    includeRentCheck.addEventListener('change', () => {
+      rentWrap.classList.toggle('visible', includeRentCheck.checked);
+      if (!includeRentCheck.checked) {
+        rentInput.value = '';
+        rentRow.style.display = 'none';
+        if (resultCard.classList.contains('visible')) calculate();
+      }
+    });
+
+    function formatMoney(n) {
+      if (n == null || !Number.isFinite(n)) return '—';
+      return '$' + Math.round(n).toLocaleString();
+    }
+
+    function calculate() {
+      const savings = parseFloat(savingsInput.value);
+      const yieldPct = parseFloat(yieldInput.value);
+      const includeRent = includeRentCheck.checked;
+      const rent = includeRent ? parseFloat(rentInput.value) : 0;
+
+      if (savings == null || isNaN(savings) || savings < 0) {
+        resultCard.classList.remove('visible');
+        return;
+      }
+      const rate = (yieldPct != null && !isNaN(yieldPct) && yieldPct >= 0) ? yieldPct / 100 : 0;
+
+      // Monthly passive from savings = (savings × annual rate) / 12
+      const fromSavings = (savings * rate) / 12;
+      const fromRent = (includeRent && rent != null && !isNaN(rent) && rent >= 0) ? rent : 0;
+      const total = fromSavings + fromRent;
+
+      outSavings.textContent = formatMoney(fromSavings);
+      if (includeRent) {
+        rentRow.style.display = 'flex';
+        outRent.textContent = formatMoney(fromRent);
+      } else {
+        rentRow.style.display = 'none';
+      }
+      outTotal.textContent = formatMoney(total);
+      resultCard.classList.add('visible');
+    }
+
+    calcBtn.addEventListener('click', calculate);
+    [savingsInput, yieldInput, rentInput].forEach(el => el.addEventListener('input', () => {
+      if (resultCard.classList.contains('visible')) calculate();
+    }));
+
+    // ——— Goal: monthly investment to reach desired passive income ———
+    const currentSavedInput = document.getElementById('currentSaved');
+    const goalRateInput = document.getElementById('goalRate');
+    const goalYearsInput = document.getElementById('goalYears');
+    const desiredMonthlyInput = document.getElementById('desiredMonthly');
+    const goalCalcBtn = document.getElementById('goalCalcBtn');
+    const goalResultCard = document.getElementById('goalResultCard');
+    const outMonthlyPmt = document.getElementById('outMonthlyPmt');
+    const goalSummary = document.getElementById('goalSummary');
+    const tableBody = document.getElementById('tableBody');
+    const tableWrap = document.getElementById('tableWrap');
+    const viewAllLink = document.getElementById('viewAllLink');
+
+    function formatMoneyGoal(n) {
+      if (n == null || !Number.isFinite(n)) return '—';
+      return '$' + Math.round(n).toLocaleString();
+    }
+
+    function calculateGoal() {
+      const pv = parseFloat(currentSavedInput.value);
+      const annualRatePct = parseFloat(goalRateInput.value);
+      const years = parseFloat(goalYearsInput.value);
+      const desiredMonthly = parseFloat(desiredMonthlyInput.value);
+
+      if ([pv, annualRatePct, years, desiredMonthly].some(x => isNaN(x) || x <= 0)) {
+        goalResultCard.classList.remove('visible');
+        return;
+      }
+
+      const annualRate = annualRatePct / 100;
+      const r = annualRate / 12;
+      const n = Math.round(years * 12);
+
+      // Capital needed to produce desired monthly at this rate: (monthly * 12) / annualRate
+      const targetCapital = (desiredMonthly * 12) / annualRate;
+      const fvFromPv = pv * Math.pow(1 + r, n);
+      const annuityFactor = (Math.pow(1 + r, n) - 1) / r;
+      let pmt = (targetCapital - fvFromPv) / annuityFactor;
+
+      if (pmt < 0) {
+        outMonthlyPmt.textContent = '$0';
+        goalSummary.innerHTML = `You already have enough (or will have enough with growth). Target capital needed is ${formatMoneyGoal(targetCapital)}. No monthly investment required.`;
+        tableBody.innerHTML = '';
+        goalResultCard.classList.add('visible');
+        tableWrap.style.display = 'none';
+        return;
+      }
+
+      tableWrap.style.display = 'block';
+      outMonthlyPmt.textContent = formatMoneyGoal(pmt);
+      goalSummary.innerHTML = `The amount of capital you will need to produce ${formatMoneyGoal(desiredMonthly)} each month in passive income in ${years} years is <span class="highlight">${formatMoneyGoal(Math.round(targetCapital))}</span>. In order to reach that goal, you'll need to invest <span class="highlight">${formatMoneyGoal(Math.round(pmt))}</span> each month.`;
+
+      // Build month-by-month table
+      let balance = pv;
+      const rows = [];
+      rows.push('<tr><td>Start</td><td>' + formatMoneyGoal(pv) + '</td><td>$0</td><td>$0</td><td>' + formatMoneyGoal(pv) + '</td></tr>');
+      for (let month = 1; month <= n; month++) {
+        const contribution = pmt;
+        const earnings = balance * r;
+        const endBalance = balance + contribution + earnings;
+        rows.push('<tr><td>Month ' + month + '</td><td>' + formatMoneyGoal(balance) + '</td><td>' + formatMoneyGoal(contribution) + '</td><td>' + formatMoneyGoal(earnings) + '</td><td>' + formatMoneyGoal(endBalance) + '</td></tr>');
+        balance = endBalance;
+      }
+      tableBody.innerHTML = rows.join('');
+      tableWrap.classList.remove('view-all');
+      viewAllLink.textContent = 'view all';
+      goalResultCard.classList.add('visible');
+    }
+
+    goalCalcBtn.addEventListener('click', calculateGoal);
+    viewAllLink.addEventListener('click', () => {
+      tableWrap.classList.toggle('view-all');
+      viewAllLink.textContent = tableWrap.classList.contains('view-all') ? 'show less' : 'view all';
+    });
+  </script>
+</body>
+
+</html>

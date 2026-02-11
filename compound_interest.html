@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Compound Interest Calculator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="shared.css">
+    <style>
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+        }
+
+        .modal h3 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: var(--text);
+        }
+
+        .modal p {
+            color: var(--muted);
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 1.5rem;
+        }
+
+        .help-btn {
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 0;
+            margin-left: 0.5rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-header h2 {
+            margin: 0;
+            font-size: 1.1rem;
+        }
+
+        /* Calculator form row: inputs + button inline */
+        .calc-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .calc-row .input-wrap {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .input-prefix-suffix {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: var(--bg-subtle);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0 0.85rem;
+        }
+
+        .input-prefix-suffix:focus-within {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .input-prefix-suffix .prefix,
+        .input-prefix-suffix .suffix {
+            font-family: "JetBrains Mono", monospace;
+            font-weight: 500;
+            color: var(--muted);
+            flex-shrink: 0;
+        }
+
+        .input-prefix-suffix input {
+            border: none;
+            background: transparent;
+            padding: 0.65rem 0;
+            min-width: 0;
+        }
+
+        .input-prefix-suffix input:focus {
+            outline: none;
+            box-shadow: none;
+        }
+
+        .calc-row label {
+            display: block;
+            margin-bottom: 0.4rem;
+        }
+
+        .calc-row input {
+            width: 100%;
+        }
+
+        .calc-row .btn-calc {
+            padding: 0.65rem 1.25rem;
+            font-size: 1rem;
+            font-weight: 600;
+            background: var(--success);
+            color: #0c1222;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .calc-row .btn-calc:hover {
+            background: #4ade80;
+            box-shadow: 0 4px 20px rgba(52, 211, 153, 0.35);
+        }
+
+        /* Final amount */
+        .final-amount-section {
+            margin-bottom: 1.25rem;
+        }
+
+        .final-amount-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--muted);
+            margin-bottom: 0.35rem;
+        }
+
+        .final-amount-value {
+            font-family: "JetBrains Mono", monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+
+        .summary-sentence {
+            font-size: 0.95rem;
+            color: var(--muted);
+            line-height: 1.55;
+            margin-top: 0.75rem;
+        }
+
+        /* Breakdown table */
+        .breakdown-section {
+            margin-top: 1.5rem;
+        }
+
+        .breakdown-table-wrap {
+            overflow-x: auto;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            margin-top: 0.75rem;
+        }
+
+        .breakdown-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .breakdown-table th {
+            text-align: left;
+            padding: 0.75rem 1rem;
+            background: var(--bg-subtle);
+            color: var(--muted);
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .breakdown-table td {
+            padding: 0.6rem 1rem;
+            border-top: 1px solid var(--border);
+            font-family: "JetBrains Mono", monospace;
+        }
+
+        .breakdown-table tr.hidden-row {
+            display: none;
+        }
+
+        .breakdown-table tr.hidden-row.visible {
+            display: table-row;
+        }
+
+        .view-all-link {
+            display: inline-block;
+            margin-top: 0.75rem;
+            font-size: 0.9rem;
+            color: var(--accent);
+            cursor: pointer;
+        }
+
+        .view-all-link:hover {
+            text-decoration: underline;
+        }
+
+        .result-area {
+            display: none;
+        }
+
+        .result-area.visible {
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app">
+        <aside class="sidebar">
+            <h2>Explorer</h2>
+            <div class="sidebar-section">
+                <div class="sidebar-label">Civil Engineering</div>
+                <div class="tool-links">
+                    <a class="tool-link" href="index.html">Elastic constants</a>
+                    <a class="tool-link" href="unit.html">Unit conversion</a>
+                    <a class="tool-link" href="pdf-editor.html">PDF editor</a>
+                </div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-label">Personal Finance</div>
+                <div class="tool-links">
+                    <a class="tool-link active" href="compound_interest.html">Compound Interest</a>
+                    <a class="tool-link" href="real_estate.html">Real Estate</a>
+<a class="tool-link" href="passive_income.html">Passive Income</a>
+                    <a class="tool-link" href="phd_decision.html">PhD Decision</a>
+        </div>
+            </div>
+        </aside>
+        <main class="main">
+            <div class="container">
+                <h1>Compound Interest Calculator: How Much Can Your Money Grow?</h1>
+                <p class="subtitle">Calculate how your savings grow with compound interest—daily, monthly, or yearly. Enter your initial amount, rate, time, and optional monthly deposits.</p>
+
+                <div class="card">
+                    <div class="calc-row">
+                        <div class="input-wrap amount">
+                            <label for="principal">Current Amount Saved</label>
+                            <div class="input-prefix-suffix">
+                                <span class="prefix">$</span>
+                                <input type="number" id="principal" placeholder="1,000" value="1000" min="0" step="100">
+                            </div>
+                        </div>
+                        <div class="input-wrap percent">
+                            <label for="rate">Annual Interest Rate</label>
+                            <div class="input-prefix-suffix">
+                                <input type="number" id="rate" placeholder="12" value="12" min="0" max="100" step="0.1">
+                                <span class="suffix">%</span>
+                            </div>
+                        </div>
+                        <div class="input-wrap">
+                            <label for="years">Years to Goal</label>
+                            <input type="number" id="years" placeholder="24" value="24" min="1" step="1">
+                        </div>
+                        <div class="input-wrap amount">
+                            <label for="monthly">Regular Monthly Deposits</label>
+                            <div class="input-prefix-suffix">
+                                <span class="prefix">$</span>
+                                <input type="number" id="monthly" placeholder="100" value="100" min="0" step="10">
+                            </div>
+                        </div>
+                        <button type="button" class="btn-calc" onclick="calculateInterest()">Calculate</button>
+                    </div>
+
+                    <div id="result-area" class="result-area">
+                        <div class="final-amount-section">
+                            <div class="final-amount-label">Final amount</div>
+                            <div class="final-amount-value" id="val-future">$0</div>
+                            <p class="summary-sentence" id="summary-sentence"></p>
+                        </div>
+
+                        <div class="breakdown-section">
+                            <div class="section-header">
+                                <h2>Investment breakdown</h2>
+                                <button class="help-btn" onclick="openModal('modal-interest')">?</button>
+                            </div>
+                            <div class="breakdown-table-wrap">
+                                <table class="breakdown-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Period</th>
+                                            <th>Balance</th>
+                                            <th>Monthly contribution</th>
+                                            <th>Earnings ($)</th>
+                                            <th>End balance</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="breakdown-body"></tbody>
+                                </table>
+                            </div>
+                            <a class="view-all-link" id="view-all-link" style="display: none;">View all</a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h2 style="font-size: 1.1rem; margin-top: 0;">What is compound interest?</h2>
+                    <p class="subtitle" style="margin-bottom: 0;">Compound interest is interest calculated on both the initial principal and the accumulated interest from previous periods. Over time, this causes your balance to grow faster than simple interest.</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="modal-interest" class="modal-overlay">
+        <div class="modal">
+            <button class="modal-close" onclick="closeModals()">&times;</button>
+            <h3>How it works</h3>
+            <p>We use <strong>monthly</strong> compounding. Each month: add your monthly deposit to the current balance, then apply one month’s interest (annual rate ÷ 12).</p>
+            <p style="text-align: center; font-family: 'JetBrains Mono'; font-size: 1.1rem; margin: 1rem 0; color: var(--accent);">
+                End balance = (Balance + Monthly deposit) × (1 + r/12)
+            </p>
+            <p>
+                <strong>Balance</strong>: start of period<br>
+                <strong>Monthly contribution</strong>: deposit that period<br>
+                <strong>Earnings</strong>: interest for that month<br>
+                <strong>End balance</strong>: start of next period
+            </p>
+        </div>
+    </div>
+
+    <script>
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+            document.getElementById(id).onclick = (e) => { if (e.target.classList.contains('modal-overlay')) closeModals(); };
+        }
+        function closeModals() {
+            document.querySelectorAll('.modal-overlay').forEach(el => el.classList.remove('active'));
+        }
+
+        const INITIAL_VISIBLE_ROWS = 13; // Start + 12 periods
+
+        function formatMoney(n) {
+            return '$' + Number(n).toLocaleString(undefined, { maximumFractionDigits: 0, minimumFractionDigits: 0 });
+        }
+
+        function calculateInterest() {
+            const principal = parseFloat(document.getElementById('principal').value) || 0;
+            const annualRate = parseFloat(document.getElementById('rate').value) || 0;
+            const years = parseFloat(document.getElementById('years').value) || 0;
+            const monthlyDeposit = parseFloat(document.getElementById('monthly').value) || 0;
+
+            if (years < 1) return;
+
+            const monthlyRate = annualRate / 100 / 12;
+            const totalMonths = Math.round(years * 12);
+
+            let balance = principal;
+            const rows = [];
+
+            // Start row
+            rows.push({
+                period: 'Start',
+                balance: principal,
+                contribution: 0,
+                earnings: 0,
+                endBalance: principal
+            });
+
+            for (let month = 1; month <= totalMonths; month++) {
+                const startBalance = balance;
+                const afterDeposit = balance + monthlyDeposit;
+                const endBalance = afterDeposit * (1 + monthlyRate);
+                const earnings = endBalance - afterDeposit;
+                balance = endBalance;
+
+                rows.push({
+                    period: month,
+                    balance: startBalance,
+                    contribution: monthlyDeposit,
+                    earnings: earnings,
+                    endBalance: endBalance
+                });
+            }
+
+            const finalAmount = balance;
+
+            // Show result area
+            document.getElementById('val-future').textContent = formatMoney(finalAmount);
+            document.getElementById('summary-sentence').textContent =
+                'With an initial amount of ' + formatMoney(principal) + ' and an interest rate of ' + annualRate + '% during a period of ' + years + ' year(s), your future investment value will be ' + formatMoney(finalAmount) + '.';
+            document.getElementById('result-area').classList.add('visible');
+
+            // Build table
+            const tbody = document.getElementById('breakdown-body');
+            tbody.innerHTML = '';
+
+            rows.forEach((r, i) => {
+                const tr = document.createElement('tr');
+                if (i >= INITIAL_VISIBLE_ROWS) tr.classList.add('hidden-row');
+                tr.innerHTML =
+                    '<td>' + (r.period === 'Start' ? 'Start' : r.period) + '</td>' +
+                    '<td>' + formatMoney(r.balance) + '</td>' +
+                    '<td>' + formatMoney(r.contribution) + '</td>' +
+                    '<td>' + formatMoney(r.earnings) + '</td>' +
+                    '<td>' + formatMoney(r.endBalance) + '</td>';
+                tbody.appendChild(tr);
+            });
+
+            const viewAllLink = document.getElementById('view-all-link');
+            if (rows.length > INITIAL_VISIBLE_ROWS) {
+                viewAllLink.style.display = 'inline-block';
+                viewAllLink.textContent = 'View all';
+                viewAllLink.onclick = function () {
+                    document.querySelectorAll('#breakdown-body .hidden-row').forEach(el => el.classList.add('visible'));
+                    viewAllLink.style.display = 'none';
+                };
+            } else {
+                viewAllLink.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+
+</html>

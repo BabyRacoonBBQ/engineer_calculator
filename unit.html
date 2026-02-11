@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Unit Conversion Cheat Sheet</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    /* Specific styles for this tool */
+    .controls {
+      display: grid;
+      gap: 1.25rem;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      align-items: start;
+    }
+
+    .action-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .action-btn {
+      padding: 0.55rem 1rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg-subtle);
+      color: var(--text);
+      font: inherit;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: border-color 0.15s ease, color 0.15s ease, background 0.15s ease;
+    }
+
+    .action-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    .toggle-group {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .table {
+      display: grid;
+      gap: 0.5rem;
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: 160px minmax(220px, 1fr) 2fr;
+      gap: 1.25rem;
+      padding: 1rem 1rem;
+      border-radius: 10px;
+      background: var(--bg-subtle);
+      border: 1px solid transparent;
+      align-items: center;
+    }
+
+    .row-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 0.03em;
+    }
+
+    .row-input {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+    }
+
+    .unit-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .unit-chip {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      min-width: 110px;
+      background: var(--surface);
+      font-size: 0.82rem;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .unit-chip.hidden {
+      display: none;
+    }
+
+    .unit-chip.active {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 2px var(--accent-glow);
+    }
+
+    .unit-label {
+      color: var(--muted);
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+    }
+
+    .unit-value {
+      font-family: "JetBrains Mono", ui-monospace, monospace;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    @media (max-width: 860px) {
+      .table-row {
+        grid-template-columns: 1fr;
+      }
+
+      .row-input {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <h2>Explorer</h2>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Civil Engineering</div>
+        <div class="tool-links">
+          <a class="tool-link" href="index.html">Elastic constants</a>
+          <a class="tool-link active" href="unit.html">Unit conversion</a>
+          <a class="tool-link" href="pdf-editor.html">PDF editor</a>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Personal Finance</div>
+        <div class="tool-links">
+          <a class="tool-link" href="compound_interest.html">Compound Interest</a>
+          <a class="tool-link" href="real_estate.html">Real Estate</a>
+          <a class="tool-link" href="passive_income.html">Passive Income</a>
+        </div>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="container">
+        <h1>Unit Conversion Table</h1>
+        <p class="subtitle">Enter a value per quantity, pick its unit, and the table converts across systems.</p>
+        <div class="card controls">
+          <div>
+            <label>Show unit systems</label>
+            <div class="toggle-group">
+              <label class="toggle"><input type="checkbox" id="toggleMetric" checked> Metric</label>
+              <label class="toggle"><input type="checkbox" id="toggleImperial" checked> US/Imperial</label>
+            </div>
+          </div>
+          <div>
+            <label>Precision (significant digits)</label>
+            <select id="precision">
+              <option value="3">3</option>
+              <option value="4">4</option>
+              <option value="5">5</option>
+              <option value="6" selected>6</option>
+              <option value="7">7</option>
+            </select>
+          </div>
+          <div>
+            <label>Quick conversion</label>
+            <div class="action-buttons">
+              <button type="button" class="action-btn" id="setMetric">Convert to/from Metric</button>
+              <button type="button" class="action-btn" id="setImperial">Convert to/from US/Imperial</button>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="table" id="conversionTable"></div>
+        </div>
+      </div>
+    </main>
+  </div>
+  <script>
+    const QUANTITIES = [
+      {
+        key: 'length',
+        label: 'Length',
+        units: [
+          { id: 'm', label: 'm', factor: 1, system: 'metric' },
+          { id: 'mm', label: 'mm', factor: 0.001, system: 'metric' },
+          { id: 'ft', label: 'ft', factor: 0.3048, system: 'imperial' },
+          { id: 'in', label: 'in', factor: 0.0254, system: 'imperial' },
+        ],
+      },
+      {
+        key: 'force',
+        label: 'Force',
+        units: [
+          { id: 'N', label: 'N', factor: 1, system: 'metric' },
+          { id: 'kN', label: 'kN', factor: 1000, system: 'metric' },
+          { id: 'lbf', label: 'lbf', factor: 4.4482216152605, system: 'imperial' },
+        ],
+      },
+      {
+        key: 'mass',
+        label: 'Mass',
+        units: [
+          { id: 'kg', label: 'kg', factor: 1, system: 'metric' },
+          { id: 'tonne', label: 'tonne', factor: 1000, system: 'metric' },
+          { id: 'slug', label: 'slug', factor: 14.59390294, system: 'imperial' },
+          { id: 'lb', label: 'lb', factor: 0.45359237, system: 'imperial' },
+        ],
+      },
+      {
+        key: 'time',
+        label: 'Time',
+        units: [
+          { id: 's', label: 's', factor: 1, system: 'metric' },
+          { id: 'min', label: 'min', factor: 60, system: 'metric' },
+          { id: 'hr', label: 'hr', factor: 3600, system: 'metric' },
+        ],
+      },
+      {
+        key: 'stress',
+        label: 'Stress',
+        units: [
+          { id: 'Pa', label: 'Pa', factor: 1, system: 'metric' },
+          { id: 'MPa', label: 'MPa', factor: 1e6, system: 'metric' },
+          { id: 'dyne/cm^2', label: 'dyne/cm^2', factor: 0.1, system: 'metric' },
+          { id: 'psi', label: 'psi', factor: 6894.757293168, system: 'imperial' },
+        ],
+      },
+      {
+        key: 'energy',
+        label: 'Energy',
+        units: [
+          { id: 'J', label: 'J', factor: 1, system: 'metric' },
+          { id: 'kJ', label: 'kJ', factor: 1000, system: 'metric' },
+          { id: 'ft·lbf', label: 'ft·lbf', factor: 1.3558179483314, system: 'imperial' },
+          { id: 'in·lbf', label: 'in·lbf', factor: 0.1129848290276167, system: 'imperial' },
+        ],
+      },
+      {
+        key: 'temperature',
+        label: 'Temperature',
+        units: [
+          {
+            id: 'C',
+            label: '°C',
+            system: 'metric',
+            toSI: (v) => v + 273.15,
+            fromSI: (v) => v - 273.15,
+          },
+          {
+            id: 'K',
+            label: 'K',
+            system: 'metric',
+            toSI: (v) => v,
+            fromSI: (v) => v,
+          },
+          {
+            id: 'F',
+            label: '°F',
+            system: 'imperial',
+            toSI: (v) => (v - 32) * 5 / 9 + 273.15,
+            fromSI: (v) => (v - 273.15) * 9 / 5 + 32,
+          },
+        ],
+      },
+      {
+        key: 'conductivity',
+        label: 'Thermal Conductivity',
+        units: [
+          { id: 'W/m·K', label: 'W/m·K', factor: 1, system: 'metric' },
+          { id: 'mW/mm·K', label: 'mW/mm·K', factor: 1, system: 'metric' },
+          { id: 'Btu/(ft·h·°F)', label: 'Btu/(ft·h·°F)', factor: 1 / 0.577789318, system: 'imperial' },
+          { id: 'Btu/(in·h·°F)', label: 'Btu/(in·h·°F)', factor: 1 / 0.0481491098, system: 'imperial' },
+        ],
+      },
+      {
+        key: 'convection',
+        label: 'Convection Coefficient',
+        units: [
+          { id: 'W/m²·K', label: 'W/m²·K', factor: 1, system: 'metric' },
+          { id: 'mW/mm²·K', label: 'mW/mm²·K', factor: 1000, system: 'metric' },
+          { id: 'Btu/(ft²·h·°F)', label: 'Btu/(ft²·h·°F)', factor: 1 / 0.1761101838, system: 'imperial' },
+          { id: 'Btu/(in²·h·°F)', label: 'Btu/(in²·h·°F)', factor: 1 / 0.001223, system: 'imperial' },
+        ],
+      },
+      {
+        key: 'specificHeat',
+        label: 'Specific Heat',
+        units: [
+          { id: 'J/kg·K', label: 'J/kg·K', factor: 1, system: 'metric' },
+          { id: 'kJ/kg·K', label: 'kJ/kg·K', factor: 1000, system: 'metric' },
+          { id: 'Btu/(lb·°F)', label: 'Btu/(lb·°F)', factor: 4186.8, system: 'imperial' },
+        ],
+      },
+      {
+        key: 'elasticModulus',
+        label: 'Elastic Modulus',
+        units: [
+          { id: 'Pa', label: 'Pa', factor: 1, system: 'metric' },
+          { id: 'MPa', label: 'MPa', factor: 1e6, system: 'metric' },
+          { id: 'psi', label: 'psi', factor: 6894.757293168, system: 'imperial' },
+          { id: 'ksi', label: 'ksi', factor: 6894757.293168, system: 'imperial' },
+        ],
+      },
+      {
+        key: 'density',
+        label: 'Density',
+        units: [
+          { id: 'kg/m³', label: 'kg/m³', factor: 1, system: 'metric' },
+          { id: 'tonne/m³', label: 'tonne/m³', factor: 1000, system: 'metric' },
+          { id: 'slug/ft³', label: 'slug/ft³', factor: 515.3788184, system: 'imperial' },
+          { id: 'lb/ft³', label: 'lb/ft³', factor: 16.01846337396, system: 'imperial' },
+        ],
+      },
+    ];
+
+    const tableEl = document.getElementById('conversionTable');
+    const precisionEl = document.getElementById('precision');
+    const toggleMetric = document.getElementById('toggleMetric');
+    const toggleImperial = document.getElementById('toggleImperial');
+
+    function formatValue(value) {
+      if (!Number.isFinite(value)) return '—';
+      const digits = parseInt(precisionEl.value, 10) || 6;
+      const abs = Math.abs(value);
+      if (abs >= 1e5 || (abs > 0 && abs < 1e-4)) {
+        return value.toExponential(Math.max(digits - 1, 0));
+      }
+      return value.toPrecision(digits);
+    }
+
+    function toSI(value, unit) {
+      if (unit.toSI) return unit.toSI(value);
+      return value * unit.factor;
+    }
+
+    function fromSI(value, unit) {
+      if (unit.fromSI) return unit.fromSI(value);
+      return value / unit.factor;
+    }
+
+    function buildRow(quantity) {
+      const row = document.createElement('div');
+      row.className = 'table-row';
+
+      const label = document.createElement('div');
+      label.className = 'row-label';
+      label.textContent = quantity.label;
+
+      const inputWrap = document.createElement('div');
+      inputWrap.className = 'row-input';
+
+      const input = document.createElement('input');
+      input.type = 'number';
+      input.step = 'any';
+      input.value = '1';
+
+      const select = document.createElement('select');
+      quantity.units.forEach((unit) => {
+        const opt = document.createElement('option');
+        opt.value = unit.id;
+        opt.textContent = unit.label;
+        select.appendChild(opt);
+      });
+
+      inputWrap.appendChild(input);
+      inputWrap.appendChild(select);
+
+      const chips = document.createElement('div');
+      chips.className = 'unit-chips';
+      const chipMap = new Map();
+
+      quantity.units.forEach((unit) => {
+        const chip = document.createElement('div');
+        chip.className = 'unit-chip';
+        chip.dataset.system = unit.system;
+
+        const chipLabel = document.createElement('div');
+        chipLabel.className = 'unit-label';
+        chipLabel.textContent = unit.label;
+
+        const chipValue = document.createElement('div');
+        chipValue.className = 'unit-value';
+        chipValue.textContent = '—';
+
+        chip.appendChild(chipLabel);
+        chip.appendChild(chipValue);
+        chips.appendChild(chip);
+        chipMap.set(unit.id, { chip, chipValue, unit });
+      });
+
+      function updateRow() {
+        const raw = parseFloat(input.value);
+        const selected = select.value;
+
+        chipMap.forEach(({ chip }) => chip.classList.remove('active'));
+        if (chipMap.has(selected)) chipMap.get(selected).chip.classList.add('active');
+
+        if (!Number.isFinite(raw)) {
+          chipMap.forEach(({ chipValue }) => (chipValue.textContent = '—'));
+          return;
+        }
+
+        const baseUnit = quantity.units.find((unit) => unit.id === selected) || quantity.units[0];
+        const valueSI = toSI(raw, baseUnit);
+
+        chipMap.forEach(({ chipValue, unit }) => {
+          const converted = fromSI(valueSI, unit);
+          chipValue.textContent = formatValue(converted);
+        });
+      }
+
+      input.addEventListener('input', updateRow);
+      select.addEventListener('change', updateRow);
+      precisionEl.addEventListener('change', updateRow);
+
+      updateRow();
+
+      row.appendChild(label);
+      row.appendChild(inputWrap);
+      row.appendChild(chips);
+      tableEl.appendChild(row);
+
+      function selectSystem(system) {
+        const preferred = quantity.units.find((unit) => unit.system === system);
+        if (!preferred) return;
+        select.value = preferred.id;
+        updateRow();
+      }
+
+      return { chipMap, selectSystem };
+    }
+
+    const rows = QUANTITIES.map(buildRow);
+    const setMetricBtn = document.getElementById('setMetric');
+    const setImperialBtn = document.getElementById('setImperial');
+
+    function applyFilters() {
+      const showMetric = toggleMetric.checked;
+      const showImperial = toggleImperial.checked;
+
+      rows.forEach(({ chipMap }) => {
+        chipMap.forEach(({ chip, unit }) => {
+          const isMetric = unit.system === 'metric';
+          const shouldShow = (isMetric && showMetric) || (!isMetric && showImperial);
+          chip.classList.toggle('hidden', !shouldShow);
+        });
+      });
+    }
+
+    setMetricBtn.addEventListener('click', () => {
+      rows.forEach((row) => row.selectSystem('metric'));
+    });
+
+    setImperialBtn.addEventListener('click', () => {
+      rows.forEach((row) => row.selectSystem('imperial'));
+    });
+
+    toggleMetric.addEventListener('change', applyFilters);
+    toggleImperial.addEventListener('change', applyFilters);
+    applyFilters();
+  </script>
+</body>
+
+</html>
