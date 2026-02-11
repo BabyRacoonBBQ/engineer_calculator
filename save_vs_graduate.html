@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PhD Decision Calculator</title>
+  <title>Save vs Graduate Early</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -30,22 +30,12 @@
     @media (max-width: 600px) { .shared-row { grid-template-columns: 1fr 1fr; } }
     .collapsible-bar { display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.9rem; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 10px; cursor: pointer; margin-top: 1.25rem; font-size: 0.9rem; color: var(--muted); }
     .collapsible-bar:hover { filter: brightness(1.05); }
-    .collapsible-bar .arrow { transition: transform 0.2s; }
     .collapsible-bar.collapsed .arrow { transform: rotate(-90deg); }
     .collapsible-content { margin-top: 0.75rem; }
     .collapsible-content.hidden { display: none; }
     .savings-row { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
-    .savings-row label { margin-bottom: 0; flex: 0 0 auto; min-width: 0; }
     .savings-row .savings-mode { min-width: 140px; }
     .savings-row .savings-value { flex: 1; min-width: 80px; }
-    .muted-inline { font-size: 0.85rem; color: var(--muted); }
-    .toggle-row { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
-    .toggle-row input[type="checkbox"] { width: auto; accent-color: var(--accent); cursor: pointer; }
-    .toggle-row label { margin: 0; cursor: pointer; font-size: 0.9rem; }
-    .invisible-asset-wrap { margin-left: 1.5rem; margin-top: 0.75rem; display: none; }
-    .invisible-asset-wrap.visible { display: block; }
-    .layoff-detail { margin-top: 0.5rem; display: none; }
-    .layoff-detail.visible { display: block; }
     .result-area.visible { display: block; }
     .table-container { margin-top: 1.25rem; background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; overflow-x: auto; }
     .table-container .chart-title { margin-bottom: 0.75rem; }
@@ -56,8 +46,8 @@
     .year-table th[colspan="3"] { text-align: center; }
     .year-table td:first-child, .year-table td.td-year { font-weight: 500; color: var(--text); }
     .year-table tr:hover td { background: rgba(56, 189, 248, 0.06); }
-    .year-table .col-not-go { border-left: 2px solid rgba(56, 189, 248, 0.4); }
-    .year-table .col-go { border-left: 2px solid rgba(52, 211, 153, 0.4); }
+    .year-table .col-save { border-left: 2px solid rgba(56, 189, 248, 0.4); }
+    .year-table .col-no-save { border-left: 2px solid rgba(251, 191, 36, 0.5); }
     .year-table .graduation-row { background: rgba(248, 113, 113, 0.08); }
   </style>
 </head>
@@ -85,15 +75,15 @@
           <a class="tool-link" href="compound_interest.html">Compound Interest</a>
           <a class="tool-link" href="real_estate.html">Real Estate</a>
           <a class="tool-link" href="passive_income.html">Passive Income</a>
-          <a class="tool-link active" href="phd_decision.html">PhD Decision</a>
-          <a class="tool-link" href="save_vs_graduate.html">Save vs Graduate</a>
+          <a class="tool-link" href="phd_decision.html">PhD Decision</a>
+          <a class="tool-link active" href="save_vs_graduate.html">Save vs Graduate</a>
         </div>
       </div>
     </aside>
     <main class="main">
       <div class="container">
-        <h1>PhD Decision Calculator</h1>
-        <p class="subtitle">Compare asset growth over time: staying in the workforce vs. doing a PhD. Optionally add the estimated value of publications (intangible asset).</p>
+        <h1>Save vs Graduate Early</h1>
+        <p class="subtitle">Compare asset growth when doing a PhD: does saving during the PhD matter more, or graduating earlier? Both paths use the same post-PhD salary and savings; only during-PhD savings and graduation year vary.</p>
 
         <div class="card card-formulas">
           <div class="collapsible-bar" id="formulasBar" onclick="toggleFormulas()">
@@ -101,10 +91,8 @@
             <span class="arrow">▼</span>
           </div>
           <div class="collapsible-content" id="formulasContent">
-            <p class="hint" style="margin-top: 0.5rem;"><strong>Not go:</strong> For year <em>t</em>, salary<sub>t</sub> = salary<sub>0</sub> × (1 + g)<sup>t</sup>; savings<sub>t</sub> = rate% × salary<sub>t</sub> or 12 × ($/month); asset<sub>t+1</sub> = asset<sub>t</sub> × (1 + r) + savings<sub>t</sub>.</p>
-            <p class="hint"><strong>Go (during PhD, year t &lt; G):</strong> salary = stipend; savings = rate% × stipend or 12 × ($/month); asset<sub>t+1</sub> = asset<sub>t</sub> × (1 + r) + savings.</p>
-            <p class="hint"><strong>Go (after PhD, year t ≥ G):</strong> same layout as Not go: salary grows by “Salary growth (%)”; savings use “Savings” (rate % or $/month). Total asset = financial asset + papers value (if enabled). <em>G</em> = graduation year.</p>
-            <p class="hint"><strong>Layoff (optional, both paths):</strong> when enabled and “after <em>K</em> years” is set, from year <em>K</em> onward for that path: no salary or savings; asset only compounds: asset<sub>t+1</sub> = asset<sub>t</sub> × (1 + r). When employed, calculations and toggles are the same for both.</p>
+            <p class="hint" style="margin-top: 0.5rem;"><strong>During PhD (year t &lt; G):</strong> salary = stipend. <strong>Save</strong> path: savings = rate% × stipend or 12×($/month). <strong>Not save</strong> path: savings = 0. Asset<sub>t+1</sub> = asset<sub>t</sub> × (1 + r) + savings.</p>
+            <p class="hint"><strong>After PhD (year t ≥ G):</strong> both paths use the same salary (post‑PhD × growth) and same savings rule. <em>G</em> = graduation year.</p>
           </div>
         </div>
 
@@ -115,7 +103,7 @@
               <input type="number" id="startAmount" value="25000" min="0" step="1000">
             </div>
             <div class="input-group">
-              <label>PhD years</label>
+              <label>PhD years (graduation year)</label>
               <input type="number" id="phdYears" value="5" min="1" max="15" step="1">
             </div>
             <div class="input-group">
@@ -123,107 +111,50 @@
               <input type="number" id="interestRate" value="5" min="0" step="0.1">
             </div>
             <div class="input-group">
-              <label>Inflation rate (%)</label>
-              <input type="number" id="inflationRate" value="2" min="0" step="0.1">
+              <label>PhD stipend ($/year)</label>
+              <input type="number" id="stipend" value="38000" min="0" step="1000">
             </div>
           </div>
 
           <div class="cols-row">
             <div class="col-card">
-              <h3>Not go</h3>
-              <div class="input-group">
-                <label>Current salary ($/year)</label>
-                <input type="number" id="noPhdSalary" value="82000" min="0" step="1000">
-              </div>
-              <div class="input-group">
-                <label>Salary growth (%/year)</label>
-                <input type="number" id="noPhdSalaryGrowth" value="3.5" min="0" step="0.1">
-              </div>
-              <div class="input-group">
-                <label>Savings</label>
-                <div class="savings-row">
-                  <select id="noPhdSavingsMode" class="savings-mode">
-                    <option value="rate">Savings rate %</option>
-                    <option value="amount">Savings $/month</option>
-                  </select>
-                  <input type="number" id="noPhdSavings" class="savings-value" value="22" min="0" step="1" aria-label="Savings value">
-                </div>
-              </div>
-              <div class="input-group layoff-row">
-                <div class="toggle-row">
-                  <input type="checkbox" id="noPhdLayoffEnable" aria-label="Enable layoff" onchange="toggleNoPhdLayoffDetail()">
-                  <label for="noPhdLayoffEnable">Layoff (optional)</label>
-                </div>
-                <div class="layoff-detail" id="noPhdLayoffDetail">
-                  <div class="savings-row" style="margin-top: 0.5rem;">
-                    <input type="number" id="noPhdLayoffAfterYears" value="0" min="0" step="1" placeholder="After year" style="max-width: 6rem;" aria-label="Layoff after year">
-                    <span class="muted-inline">years → interest only</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-card">
-              <h3>Go</h3>
+              <h3>Save (during PhD)</h3>
               <div class="section-label">During PhD</div>
               <div class="input-group">
-                <label>PhD stipend ($/year)</label>
-                <input type="number" id="phdSalary" value="38000" min="0" step="1000">
-              </div>
-              <div class="input-group">
                 <label>Savings</label>
                 <div class="savings-row">
-                  <select id="phdSavingsMode" class="savings-mode">
+                  <select id="saveMode" class="savings-mode">
                     <option value="rate">Savings rate %</option>
                     <option value="amount">Savings $/month</option>
                   </select>
-                  <input type="number" id="phdSavings" class="savings-value" value="8" min="0" step="1" aria-label="Savings value">
+                  <input type="number" id="saveValue" class="savings-value" value="8" min="0" step="1" aria-label="Savings value">
                 </div>
               </div>
               <div class="section-label">After PhD</div>
               <div class="input-group">
                 <label>Salary after PhD ($/year)</label>
-                <input type="number" id="phdPostSalary" value="105000" min="0" step="1000">
+                <input type="number" id="postSalary" value="105000" min="0" step="1000">
               </div>
               <div class="input-group">
                 <label>Salary growth (%/year)</label>
-                <input type="number" id="phdPostSalaryGrowth" value="3.5" min="0" step="0.1">
+                <input type="number" id="postGrowth" value="3.5" min="0" step="0.1">
               </div>
               <div class="input-group">
                 <label>Savings</label>
                 <div class="savings-row">
-                  <select id="phdPostSavingsMode" class="savings-mode">
+                  <select id="postSaveMode" class="savings-mode">
                     <option value="rate">Savings rate %</option>
                     <option value="amount">Savings $/month</option>
                   </select>
-                  <input type="number" id="phdPostSavings" class="savings-value" value="22" min="0" step="1" aria-label="Savings after PhD">
-                </div>
-              </div>
-              <div class="input-group layoff-row">
-                <div class="toggle-row">
-                  <input type="checkbox" id="phdLayoffEnable" aria-label="Enable layoff" onchange="togglePhdLayoffDetail()">
-                  <label for="phdLayoffEnable">Layoff (optional)</label>
-                </div>
-                <div class="layoff-detail" id="phdLayoffDetail">
-                  <div class="savings-row" style="margin-top: 0.5rem;">
-                    <input type="number" id="phdLayoffAfterYears" value="0" min="0" step="1" placeholder="After year" style="max-width: 6rem;" aria-label="Layoff after year">
-                    <span class="muted-inline">years → interest only</span>
-                  </div>
+                  <input type="number" id="postSaveValue" class="savings-value" value="22" min="0" step="1" aria-label="Savings after PhD">
                 </div>
               </div>
             </div>
-          </div>
-
-          <div class="input-group" style="margin-top: 1.25rem;">
-            <div class="toggle-row">
-              <input type="checkbox" id="includePapers" onchange="togglePapers()">
-              <label for="includePapers">Include estimated value of publications (papers stay on CV)</label>
-            </div>
-            <div class="invisible-asset-wrap" id="invisibleAssetWrap">
-              <div class="input-group" style="max-width: 200px; margin-top: 0.5rem;">
-                <label>Estimated value of publications ($)</label>
-                <input type="number" id="papersValue" value="50000" min="0" step="5000">
-              </div>
-              <p class="hint" style="margin-top: 0.5rem;">One-time estimate; added to PhD path from graduation year onward.</p>
+            <div class="col-card">
+              <h3>Not save (during PhD)</h3>
+              <p class="hint" style="margin-top: 0; margin-bottom: 1rem;">Zero savings during PhD. After PhD uses the same salary and savings as the Save path.</p>
+              <div class="section-label">After PhD (same as Save)</div>
+              <p class="hint" style="margin-bottom: 0;">Salary, growth, and savings are shared; only during-PhD behavior differs.</p>
             </div>
           </div>
 
@@ -240,7 +171,7 @@
                 <button type="button" class="range-btn active" data-range="all">All</button>
               </div>
               <canvas id="assetChart" width="800" height="320"></canvas>
-              <p class="hint" style="margin-top: 0.5rem; margin-bottom: 0;">Scroll or pinch to zoom, drag to pan. Use buttons above for 10 / 20 / 30 yr or All.</p>
+              <p class="hint" style="margin-top: 0.5rem; margin-bottom: 0;">Scroll or pinch to zoom, drag to pan. Vertical line = graduation.</p>
             </div>
             <div class="table-container">
               <div class="chart-title">Values by year</div>
@@ -260,30 +191,6 @@
   <script>
     let assetChartInstance = null;
 
-    function togglePapers() {
-      document.getElementById('invisibleAssetWrap').classList.toggle('visible', document.getElementById('includePapers').checked);
-    }
-    function toggleNoPhdLayoffDetail() {
-      document.getElementById('noPhdLayoffDetail').classList.toggle('visible', document.getElementById('noPhdLayoffEnable').checked);
-    }
-    function togglePhdLayoffDetail() {
-      document.getElementById('phdLayoffDetail').classList.toggle('visible', document.getElementById('phdLayoffEnable').checked);
-    }
-    function getNoPhdSavings(salary) {
-      const mode = document.getElementById('noPhdSavingsMode').value;
-      const v = parseFloat(document.getElementById('noPhdSavings').value) || 0;
-      return mode === 'rate' ? (salary * v / 100) : (v * 12);
-    }
-    function getPhdSavings(salary) {
-      const mode = document.getElementById('phdSavingsMode').value;
-      const v = parseFloat(document.getElementById('phdSavings').value) || 0;
-      return mode === 'rate' ? (salary * v / 100) : (v * 12);
-    }
-    function getPhdPostSavings(salary) {
-      const mode = document.getElementById('phdPostSavingsMode').value;
-      const v = parseFloat(document.getElementById('phdPostSavings').value) || 0;
-      return mode === 'rate' ? (salary * v / 100) : (v * 12);
-    }
     function toggleFormulas() {
       document.getElementById('formulasBar').classList.toggle('collapsed');
       document.getElementById('formulasContent').classList.toggle('hidden');
@@ -291,9 +198,19 @@
     document.getElementById('formulasBar').classList.add('collapsed');
     document.getElementById('formulasContent').classList.add('hidden');
 
+    function getDuringSave() {
+      const mode = document.getElementById('saveMode').value;
+      const v = parseFloat(document.getElementById('saveValue').value) || 0;
+      const stipend = parseFloat(document.getElementById('stipend').value) || 0;
+      return mode === 'rate' ? (stipend * v / 100) : (v * 12);
+    }
+    function getPostSave(salary) {
+      const mode = document.getElementById('postSaveMode').value;
+      const v = parseFloat(document.getElementById('postSaveValue').value) || 0;
+      return mode === 'rate' ? (salary * v / 100) : (v * 12);
+    }
+
     window.addEventListener('DOMContentLoaded', function() {
-      toggleNoPhdLayoffDetail();
-      togglePhdLayoffDetail();
       calculate();
     });
 
@@ -301,51 +218,38 @@
       const start = parseFloat(document.getElementById('startAmount').value) || 0;
       const phdYears = Math.max(1, parseInt(document.getElementById('phdYears').value, 10) || 5);
       const r = (parseFloat(document.getElementById('interestRate').value) || 0) / 100;
-      const noPhdSalary0 = parseFloat(document.getElementById('noPhdSalary').value) || 0;
-      const noPhdGrowth = (parseFloat(document.getElementById('noPhdSalaryGrowth').value) || 0) / 100;
-      const phdStipend = parseFloat(document.getElementById('phdSalary').value) || 0;
-      const postPhdSalary0 = parseFloat(document.getElementById('phdPostSalary').value) || 0;
-      const phdPostGrowth = (parseFloat(document.getElementById('phdPostSalaryGrowth').value) || 0) / 100;
-      const includePapers = document.getElementById('includePapers').checked;
-      const papersValue = includePapers ? (parseFloat(document.getElementById('papersValue').value) || 0) : 0;
-      const noPhdLayoffEnable = document.getElementById('noPhdLayoffEnable').checked;
-      const noPhdLayoffYear = Math.max(0, parseInt(document.getElementById('noPhdLayoffAfterYears').value, 10) || 0);
-      const phdLayoffEnable = document.getElementById('phdLayoffEnable').checked;
-      const phdLayoffYear = Math.max(0, parseInt(document.getElementById('phdLayoffAfterYears').value, 10) || 0);
+      const stipend = parseFloat(document.getElementById('stipend').value) || 0;
+      const postSalary0 = parseFloat(document.getElementById('postSalary').value) || 0;
+      const postGrowth = (parseFloat(document.getElementById('postGrowth').value) || 0) / 100;
 
       const years = Math.max(phdYears + 20, 25);
-      const noPhd = [], phd = [];
-      const noPhdSalaries = [], noPhdSavings = [], phdSalaries = [], phdSavings = [];
-      let aNo = start, aPhd = start;
-      let salaryNo = noPhdSalary0;
-      let salaryPhdPost = postPhdSalary0;
+      const savePath = [], noSavePath = [];
+      const saveSalaries = [], saveSavings = [], noSaveSalaries = [], noSaveSavings = [];
+      let aSave = start, aNoSave = start;
+      let postSalary = postSalary0;
 
       for (let y = 0; y <= years; y++) {
-        noPhd.push(aNo);
-        const phdFinancial = aPhd;
-        phd.push(phdFinancial + (y >= phdYears ? papersValue : 0));
+        savePath.push(aSave);
+        noSavePath.push(aNoSave);
 
-        const noPhdLaidOff = noPhdLayoffEnable && noPhdLayoffYear > 0 && y >= noPhdLayoffYear;
-        const phdLaidOff = phdLayoffEnable && phdLayoffYear > 0 && y >= phdLayoffYear;
+        const salary = y < phdYears ? stipend : postSalary;
+        const saveDuring = y < phdYears ? getDuringSave() : 0;
+        const savePost = y >= phdYears ? getPostSave(postSalary) : 0;
+        const savePathSavings = y < phdYears ? saveDuring : savePost;
+        const noSavePathSavings = y < phdYears ? 0 : savePost;
 
-        const salaryNoDisplay = noPhdLaidOff ? 0 : salaryNo;
-        const saveNo = noPhdLaidOff ? 0 : getNoPhdSavings(salaryNo);
-        const salaryPhd = phdLaidOff ? 0 : (y < phdYears ? phdStipend : salaryPhdPost);
-        const savePhd = phdLaidOff ? 0 : (y < phdYears ? getPhdSavings(salaryPhd) : getPhdPostSavings(salaryPhd));
+        saveSalaries.push(salary);
+        saveSavings.push(savePathSavings);
+        noSaveSalaries.push(salary);
+        noSaveSavings.push(noSavePathSavings);
 
-        noPhdSalaries.push(salaryNoDisplay);
-        noPhdSavings.push(saveNo);
-        phdSalaries.push(salaryPhd);
-        phdSavings.push(savePhd);
-
-        aNo = aNo * (1 + r) + saveNo;
-        if (!noPhdLaidOff) salaryNo *= (1 + noPhdGrowth);
-        aPhd = aPhd * (1 + r) + savePhd;
-        if (y >= phdYears && !phdLaidOff) salaryPhdPost *= (1 + phdPostGrowth);
+        aSave = aSave * (1 + r) + savePathSavings;
+        aNoSave = aNoSave * (1 + r) + noSavePathSavings;
+        if (y >= phdYears) postSalary *= (1 + postGrowth);
       }
 
-      drawChart(noPhd, phd, years, phdYears, noPhdLayoffEnable, noPhdLayoffYear, phdLayoffEnable, phdLayoffYear);
-      fillYearTable(years, phdYears, noPhd, phd, noPhdSalaries, noPhdSavings, phdSalaries, phdSavings, papersValue, includePapers);
+      drawChart(savePath, noSavePath, years, phdYears);
+      fillYearTable(years, phdYears, savePath, noSavePath, saveSalaries, saveSavings, noSaveSalaries, noSaveSavings);
       document.getElementById('resultArea').classList.add('visible');
     }
 
@@ -354,22 +258,22 @@
       return (Math.round(x)).toLocaleString();
     }
 
-    function fillYearTable(years, phdYears, noPhd, phd, noPhdSalaries, noPhdSavings, phdSalaries, phdSavings, papersValue, includePapers) {
+    function fillYearTable(years, phdYears, savePath, noSavePath, saveSalaries, saveSavings, noSaveSalaries, noSaveSavings) {
       const thead = document.getElementById('yearTableHead');
       const tbody = document.getElementById('yearTableBody');
-      thead.innerHTML = '<tr><th rowspan="2" class="th-year">Year</th><th colspan="3" class="col-not-go">Not go</th><th colspan="3" class="col-go">Go</th></tr><tr><th class="col-not-go">Salary</th><th class="col-not-go">Savings</th><th class="col-not-go">Total</th><th class="col-go">Salary</th><th class="col-go">Savings</th><th class="col-go">Total</th></tr>';
+      thead.innerHTML = '<tr><th rowspan="2" class="th-year">Year</th><th colspan="3" class="col-save">Save</th><th colspan="3" class="col-no-save">Not save</th></tr><tr><th class="col-save">Salary</th><th class="col-save">Savings</th><th class="col-save">Total</th><th class="col-no-save">Salary</th><th class="col-no-save">Savings</th><th class="col-no-save">Total</th></tr>';
       let html = '';
       for (let y = 0; y <= years; y++) {
         const rowClass = y === phdYears ? ' class="graduation-row"' : '';
         html += '<tr' + rowClass + '><td class="td-year">' + y + '</td>';
-        html += '<td class="col-not-go">' + fmt(noPhdSalaries[y]) + '</td><td class="col-not-go">' + fmt(noPhdSavings[y]) + '</td><td class="col-not-go">' + fmt(noPhd[y]) + '</td>';
-        html += '<td class="col-go">' + fmt(phdSalaries[y]) + '</td><td class="col-go">' + fmt(phdSavings[y]) + '</td><td class="col-go">' + fmt(phd[y]) + '</td>';
+        html += '<td class="col-save">' + fmt(saveSalaries[y]) + '</td><td class="col-save">' + fmt(saveSavings[y]) + '</td><td class="col-save">' + fmt(savePath[y]) + '</td>';
+        html += '<td class="col-no-save">' + fmt(noSaveSalaries[y]) + '</td><td class="col-no-save">' + fmt(noSaveSavings[y]) + '</td><td class="col-no-save">' + fmt(noSavePath[y]) + '</td>';
         html += '</tr>';
       }
       tbody.innerHTML = html;
     }
 
-    function drawChart(noPhd, phd, maxYear, phdYears, noPhdLayoffEnable, noPhdLayoffYear, phdLayoffEnable, phdLayoffYear) {
+    function drawChart(savePath, noSavePath, maxYear, phdYears) {
       if (assetChartInstance) {
         assetChartInstance.destroy();
         assetChartInstance = null;
@@ -388,38 +292,11 @@
           borderDash: [4, 4]
         };
       }
-      if (noPhdLayoffEnable && noPhdLayoffYear > 0 && noPhdLayoffYear <= maxYear) {
-        annotations.layoffNotGo = {
-          type: 'line',
-          xMin: noPhdLayoffYear,
-          xMax: noPhdLayoffYear,
-          borderColor: 'rgba(56, 189, 248, 0.9)',
-          borderWidth: 1.5,
-          borderDash: [6, 4]
-        };
-      }
-      if (phdLayoffEnable && phdLayoffYear > 0 && phdLayoffYear <= maxYear) {
-        annotations.layoffGo = {
-          type: 'line',
-          xMin: phdLayoffYear,
-          xMax: phdLayoffYear,
-          borderColor: 'rgba(52, 211, 153, 0.9)',
-          borderWidth: 1.5,
-          borderDash: [6, 4]
-        };
-      }
 
       const plugins = {
         zoom: {
-          zoom: {
-            wheel: { enabled: true },
-            pinch: { enabled: true },
-            mode: 'x'
-          },
-          pan: {
-            enabled: true,
-            mode: 'x'
-          },
+          zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' },
+          pan: { enabled: true, mode: 'x' },
           limits: { x: { min: 0, max: maxYear } }
         }
       };
@@ -433,8 +310,8 @@
           labels: labels,
           datasets: [
             {
-              label: 'Not go',
-              data: noPhd,
+              label: 'Save',
+              data: savePath,
               borderColor: '#38bdf8',
               backgroundColor: 'rgba(56, 189, 248, 0.1)',
               fill: false,
@@ -443,10 +320,10 @@
               pointHoverRadius: 4
             },
             {
-              label: 'Go',
-              data: phd,
-              borderColor: '#34d399',
-              backgroundColor: 'rgba(52, 211, 153, 0.1)',
+              label: 'Not save',
+              data: noSavePath,
+              borderColor: '#fbbf24',
+              backgroundColor: 'rgba(251, 191, 36, 0.1)',
               fill: false,
               tension: 0.15,
               pointRadius: 0,

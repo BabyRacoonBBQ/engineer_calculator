@@ -3,358 +3,136 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Linear Elasticity Constants Converter</title>
+  <title>Engineer Calculator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
   <style>
-    :root {
-      --bg: #0f1419;
-      --surface: #1a2332;
-      --border: #2d3a4d;
-      --text: #e6edf3;
-      --muted: #8b949e;
-      --accent: #58a6ff;
-      --success: #3fb950;
-      --error: #f85149;
-    }
-    * { box-sizing: border-box; }
-    body {
-      font-family: "JetBrains Mono", "Consolas", "SF Mono", monospace;
-      background: var(--bg);
-      color: var(--text);
-      margin: 0;
-      min-height: 100vh;
-      padding: 2rem;
-      line-height: 1.5;
-    }
-    .container {
-      max-width: 520px;
-      margin: 0 auto;
-    }
-    h1 {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--muted);
-      margin-bottom: 0.5rem;
-    }
-    .subtitle {
-      font-size: 0.85rem;
-      color: var(--muted);
-      margin-bottom: 1.5rem;
-    }
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 1.25rem 1.5rem;
-      margin-bottom: 1rem;
-    }
-    label {
-      display: block;
+    .hub-section { margin-bottom: 2rem; }
+    .hub-section:last-child { margin-bottom: 0; }
+    .hub-section h2 {
       font-size: 0.75rem;
-      color: var(--muted);
-      margin-bottom: 0.35rem;
+      font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-    select, input[type="number"] {
-      width: 100%;
-      padding: 0.5rem 0.65rem;
-      font: inherit;
-      font-size: 0.95rem;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      color: var(--text);
-    }
-    select:focus, input:focus {
-      outline: none;
-      border-color: var(--accent);
-    }
-    .input-row, .results {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-    .input-group { margin-bottom: 0; }
-    .result-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      padding: 0.4rem 0;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+      margin: 0 0 1rem;
+      padding-bottom: 0.5rem;
       border-bottom: 1px solid var(--border);
     }
-    .result-item .symbol {
-      font-size: 0.9rem;
-      color: var(--muted);
+    .hub-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
     }
-    .result-item .value {
+    .hub-card {
+      display: block;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      color: var(--text);
+      text-decoration: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .hub-card:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.2);
+    }
+    .hub-card h3 {
       font-size: 1rem;
-      font-weight: 500;
+      font-weight: 600;
+      margin: 0 0 0.35rem;
       color: var(--text);
     }
-    .result-item .value.error { color: var(--error); }
-    .result-item.hidden { display: none; }
-    .hint {
-      font-size: 0.8rem;
+    .hub-card p {
+      font-size: 0.875rem;
       color: var(--muted);
-      margin-top: 1rem;
+      margin: 0;
+      line-height: 1.45;
     }
-    .error-msg {
-      font-size: 0.85rem;
-      color: var(--error);
-      margin-top: 0.5rem;
-    }
-    .btn {
-      width: 100%;
-      margin-top: 1rem;
-      padding: 0.6rem 1rem;
-      font: inherit;
-      font-size: 0.95rem;
-      font-weight: 500;
-      background: var(--accent);
-      color: var(--bg);
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    .btn:hover { filter: brightness(1.1); }
-    .btn:active { filter: brightness(0.95); }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Linear Elasticity Constants</h1>
-    <p class="subtitle">Convert among G (shear), E (Young’s), κ (bulk), λ (Lamé), ν (Poisson).</p>
-
-    <div class="card">
-      <label for="pair">Input pair (known)</label>
-      <select id="pair">
-        <option value="G_E">G and E</option>
-        <option value="G_k">G and κ</option>
-        <option value="G_l">G and λ</option>
-        <option value="G_n">G and ν</option>
-        <option value="E_k">E and κ</option>
-        <option value="E_n">E and ν</option>
-        <option value="k_l">κ and λ</option>
-        <option value="k_n">κ and ν</option>
-      </select>
-      <div class="input-row">
-        <div class="input-group">
-          <label id="label1">First</label>
-          <input type="number" id="input1" step="any" placeholder="e.g. 80e9">
-        </div>
-        <div class="input-group">
-          <label id="label2">Second</label>
-          <input type="number" id="input2" step="any" placeholder="e.g. 200e9">
+  <div class="app">
+    <aside class="sidebar">
+      <h2>Explorer</h2>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Navigate</div>
+        <div class="tool-links">
+          <a class="tool-link active" href="index.html">Home</a>
         </div>
       </div>
-      <button type="button" class="btn" id="convertBtn">Convert</button>
-      <p class="hint">Use SI units (e.g. Pa, GPa). Scientific notation allowed (e.g. 80e9).</p>
-      <p id="error" class="error-msg" style="display:none;"></p>
-    </div>
-
-    <div class="card">
-      <label for="sigDigits">Significant digits (output)</label>
-      <select id="sigDigits">
-        <option value="3">3 digits</option>
-        <option value="4">4 digits</option>
-        <option value="5">5 digits</option>
-        <option value="6" selected>6 digits</option>
-        <option value="7">7 digits</option>
-        <option value="8">8 digits</option>
-      </select>
-      <div class="results" id="results">
-        <div class="result-item" data-key="G"><span class="symbol">G (μ)</span><span class="value" id="out_G">—</span></div>
-        <div class="result-item" data-key="E"><span class="symbol">E</span><span class="value" id="out_E">—</span></div>
-        <div class="result-item" data-key="k"><span class="symbol">κ</span><span class="value" id="out_k">—</span></div>
-        <div class="result-item" data-key="l"><span class="symbol">λ</span><span class="value" id="out_l">—</span></div>
-        <div class="result-item" data-key="n"><span class="symbol">ν</span><span class="value" id="out_n">—</span></div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Civil Engineering</div>
+        <div class="tool-links">
+          <a class="tool-link" href="elastic.html">Elastic constants</a>
+          <a class="tool-link" href="unit.html">Unit conversion</a>
+          <a class="tool-link" href="pdf-editor.html">PDF editor</a>
+        </div>
       </div>
-    </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">Personal Finance</div>
+        <div class="tool-links">
+          <a class="tool-link" href="compound_interest.html">Compound Interest</a>
+          <a class="tool-link" href="real_estate.html">Real Estate</a>
+          <a class="tool-link" href="passive_income.html">Passive Income</a>
+          <a class="tool-link" href="phd_decision.html">PhD Decision</a>
+          <a class="tool-link" href="save_vs_graduate.html">Save vs Graduate</a>
+        </div>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="container">
+        <h1>Engineer Calculator</h1>
+        <p class="subtitle">Tools for civil engineering and personal finance. Pick a tool below or use the sidebar.</p>
+
+        <div class="hub-section">
+          <h2>Civil Engineering</h2>
+          <div class="hub-grid">
+            <a class="hub-card" href="elastic.html">
+              <h3>Elastic constants</h3>
+              <p>Convert among G (shear), E (Young’s), κ (bulk), λ (Lamé), ν (Poisson).</p>
+            </a>
+            <a class="hub-card" href="unit.html">
+              <h3>Unit conversion</h3>
+              <p>Convert units for length, force, stress, and more.</p>
+            </a>
+            <a class="hub-card" href="pdf-editor.html">
+              <h3>PDF editor</h3>
+              <p>Edit and annotate PDFs in the browser.</p>
+            </a>
+          </div>
+        </div>
+
+        <div class="hub-section">
+          <h2>Personal Finance</h2>
+          <div class="hub-grid">
+            <a class="hub-card" href="compound_interest.html">
+              <h3>Compound Interest</h3>
+              <p>Project growth with compound interest over time.</p>
+            </a>
+            <a class="hub-card" href="real_estate.html">
+              <h3>Real Estate</h3>
+              <p>Rent vs. buy and related calculations.</p>
+            </a>
+            <a class="hub-card" href="passive_income.html">
+              <h3>Passive Income</h3>
+              <p>Estimate passive income streams.</p>
+            </a>
+            <a class="hub-card" href="phd_decision.html">
+              <h3>PhD Decision</h3>
+              <p>Compare asset paths: stay working vs. do a PhD.</p>
+            </a>
+            <a class="hub-card" href="save_vs_graduate.html">
+              <h3>Save vs Graduate</h3>
+              <p>See if saving during PhD or graduating earlier matters more.</p>
+            </a>
+          </div>
+        </div>
+      </div>
+    </main>
   </div>
-
-  <script>
-    const PAIR_LABELS = {
-      G_E: ['G (shear modulus)', 'E (Young\'s modulus)'],
-      G_k: ['G (shear modulus)', 'κ (bulk modulus)'],
-      G_l: ['G (shear modulus)', 'λ (Lamé)'],
-      G_n: ['G (shear modulus)', 'ν (Poisson ratio)'],
-      E_k: ['E (Young\'s modulus)', 'κ (bulk modulus)'],
-      E_n: ['E (Young\'s modulus)', 'ν (Poisson ratio)'],
-      k_l: ['κ (bulk modulus)', 'λ (Lamé)'],
-      k_n: ['κ (bulk modulus)', 'ν (Poisson ratio)'],
-    };
-
-    const pairSelect = document.getElementById('pair');
-    const sigDigitsSelect = document.getElementById('sigDigits');
-    const input1 = document.getElementById('input1');
-    const input2 = document.getElementById('input2');
-    const label1 = document.getElementById('label1');
-    const label2 = document.getElementById('label2');
-    const errorEl = document.getElementById('error');
-    const out = { G: document.getElementById('out_G'), E: document.getElementById('out_E'), k: document.getElementById('out_k'), l: document.getElementById('out_l'), n: document.getElementById('out_n') };
-
-    function getSigDigits() {
-      const v = parseInt(sigDigitsSelect.value, 10);
-      return Number.isFinite(v) ? v : 6;
-    }
-
-    function getPair() { return pairSelect.value; }
-    function getVal(id) { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? null : v; }
-
-    function setLabels() {
-      const pair = getPair();
-      const [a, b] = PAIR_LABELS[pair];
-      label1.textContent = a;
-      label2.textContent = b;
-    }
-
-    function showError(msg) {
-      errorEl.textContent = msg || '';
-      errorEl.style.display = msg ? 'block' : 'none';
-    }
-
-    function setResult(key, value, isError) {
-      const el = out[key];
-      if (value == null || (typeof value === 'number' && !Number.isFinite(value))) {
-        el.textContent = '—';
-        el.classList.remove('error');
-        return;
-      }
-      el.textContent = typeof value === 'number' ? formatNum(value) : value;
-      el.classList.toggle('error', !!isError);
-    }
-
-    function formatNum(x) {
-      const sig = getSigDigits();
-      if (Math.abs(x) >= 1e4 || (Math.abs(x) < 0.001 && x !== 0))
-        return x.toExponential(Math.max(sig - 1, 0));
-      return x.toPrecision(sig);
-    }
-
-    // Table 7.1: all conversions (exact formulas; no LLM inference)
-    function convert() {
-      const pair = getPair();
-      const a = getVal('input1');
-      const b = getVal('input2');
-
-      ['G', 'E', 'k', 'l', 'n'].forEach(k => setResult(k, null));
-
-      if (a == null || b == null) {
-        showError('');
-        return;
-      }
-
-      let G, E, k, l, n;
-      let err = '';
-
-      try {
-        switch (pair) {
-          case 'G_E': {
-            G = a; E = b;
-            const den1 = 9*G - 3*E, den2 = 3*G - E;
-            if (Math.abs(den1) < 1e-30) { err = '9G − 3E ≈ 0'; break; }
-            if (Math.abs(den2) < 1e-30) { err = '3G − E ≈ 0'; break; }
-            k = (G*E) / den1;
-            l = (G*(E - 2*G)) / den2;
-            n = (E - 2*G) / (2*G);
-            break;
-          }
-          case 'G_k': {
-            G = a; k = b;
-            const den = 3*k + G;
-            if (Math.abs(den) < 1e-30) { err = '3κ + G ≈ 0'; break; }
-            E = (9*G*k) / den;
-            l = k - (2*G/3);
-            n = (3*k - 2*G) / (2*den);
-            break;
-          }
-          case 'G_l': {
-            G = a; l = b;
-            const den = l + G;
-            if (Math.abs(den) < 1e-30) { err = 'λ + G ≈ 0'; break; }
-            E = (G*(3*l + 2*G)) / den;
-            k = l + (2*G/3);
-            n = l / (2*den);
-            break;
-          }
-          case 'G_n': {
-            G = a; n = b;
-            const den = 1 - 2*n;
-            if (Math.abs(den) < 1e-30) { err = '1 − 2ν ≈ 0 (incompressible)'; break; }
-            E = 2*G*(1 + n);
-            k = (2*G*(1 + n)) / (3*den);
-            l = (2*G*n) / den;
-            break;
-          }
-          case 'E_k': {
-            E = a; k = b;
-            const den = 9*k - E;
-            if (Math.abs(den) < 1e-30) { err = '9κ − E ≈ 0'; break; }
-            G = (3*k*E) / den;
-            l = (k*(9*k - 3*E)) / den;
-            n = (3*k - E) / (6*k);
-            break;
-          }
-          case 'E_n': {
-            E = a; n = b;
-            const den1 = 1 + n, den2 = 1 - 2*n;
-            if (Math.abs(den1) < 1e-30) { err = '1 + ν ≈ 0'; break; }
-            if (Math.abs(den2) < 1e-30) { err = '1 − 2ν ≈ 0 (incompressible)'; break; }
-            G = E / (2*den1);
-            k = E / (3*den2);
-            l = (n*E) / (den1*den2);
-            break;
-          }
-          case 'k_l': {
-            k = a; l = b;
-            const den = 3*k - l;
-            if (Math.abs(den) < 1e-30) { err = '3κ − λ ≈ 0'; break; }
-            G = (3*(k - l)) / 2;
-            E = (9*k*(k - l)) / den;
-            n = l / den;
-            break;
-          }
-          case 'k_n': {
-            k = a; n = b;
-            const den = 1 + n;
-            if (Math.abs(den) < 1e-30) { err = '1 + ν ≈ 0'; break; }
-            G = (3*k*(1 - 2*n)) / (2*den);
-            E = 3*k*(1 - 2*n);
-            l = (3*k*n) / den;
-            break;
-          }
-          default: return;
-        }
-
-        if (err) {
-          showError(err);
-          return;
-        }
-
-        if ([G, E, k, l, n].some(x => x != null && (!Number.isFinite(x) || (x === n && (n < -1 || n > 0.5))))) {
-          if (n != null && (n < -1 || n > 0.5)) err = 'ν must be in (-1, 0.5) for stable material.';
-          else err = 'Invalid or unstable combination (check denominators).';
-          showError(err);
-        } else {
-          showError('');
-        }
-
-        setResult('G', G);
-        setResult('E', E);
-        setResult('k', k);
-        setResult('l', l);
-        setResult('n', n, n != null && (n < -1 || n > 0.5));
-      } catch (e) {
-        showError(e.message || 'Calculation error');
-      }
-    }
-
-    document.getElementById('convertBtn').addEventListener('click', convert);
-    pairSelect.addEventListener('change', setLabels);
-    sigDigitsSelect.addEventListener('change', convert);
-
-    setLabels();
-  </script>
 </body>
 </html>
